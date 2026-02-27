@@ -1,0 +1,8 @@
+{
+    "name": "ecommerce/ecommerce-app",
+    "description": "A modular e-commerce platform ",
+    "license": "MIT",
+    "require": {
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
