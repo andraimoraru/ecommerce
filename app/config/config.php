@@ -1,16 +1,17 @@
 <?php
-//DB Host
-define('DB_HOST', 'localhost');
-//DB User       
-define('DB_USER', 'root');
-//DB Password
-define('DB_PASS', '');
-//DB Name
-define('DB_NAME', 'modular_ecom');
+declare(strict_types=1);
 
-// App Root
-define('APPROOT', dirname(dirname(__FILE__)));
-// URL Root
-define('URLROOT', 'http://localhost/ecommerce');
+// Database Config (from .env)
+define('DB_HOST', $_ENV['DB_HOST'] ?? 'localhost');
+define('DB_USER', $_ENV['DB_USER'] ?? 'root');
+define('DB_PASS', $_ENV['DB_PASS'] ?? '');
+define('DB_NAME', $_ENV['DB_NAME'] ?? 'modular_ecom');
+
+// App Root (points to /app)
+define('APPROOT', dirname(__DIR__));
+
+// URL Root (important for XAMPP folder setup)
+define('URLROOT', rtrim($_ENV['APP_URL'] ?? 'http://localhost/ecommerce', '/'));
+
 // Site Name
-define('SITENAME', 'Modular E-commerce');
+define('SITENAME', $_ENV['SITE_NAME'] ?? 'Modular E-commerce');

@@ -1,37 +1,37 @@
 <?php
+namespace App\Core;
+
 /*
-* App Core Class
-* Creates URL and loads core controller
-* URL FORMAT - /controller/method/params
-*/
+ * App Core Class
+ * Creates URL and loads core controller
+ * URL FORMAT - /controller/method/params
+ */
 class Core {
-    protected $currentController = 'Pages';
+    /**
+     * Fully qualified controller class name (defaults to App\Controllers\Pages)
+     * @var string
+     */
+    protected $currentController = 'App\\Controllers\\Pages';
     protected $currentMethod = 'index';
-    protected $params = [];         
+    protected $params = [];
 
     public function __construct() {
         $url = $this->getUrl();
 
-        // Look in controllers for first value
-        if (file_exists('../app/Controllers/' . ucwords($url[0]) . '.php')) {
-            // If exists, set as controller
-            $this->currentController = ucwords($url[0]);
-            unset($url[0]); 
+        // Determine controller class
+        if (isset($url[0]) && class_exists('App\\Controllers\\' . ucwords($url[0]))) {
+            $this->currentController = 'App\\Controllers\\' . ucwords($url[0]);
+            unset($url[0]);
         }
-        // Require the controller
-        require_once '../app/Controllers/' . $this->currentController . '.php';
 
-        // Instantiate controller class
-        $this->currentController = new $this->currentController;
+        // Instantiate controller class (Composer will autoload it)
+        $this->currentController = new $this->currentController();
 
-        // Check for second part of URL
-        if (isset($url[1])) {
-            // Check if method exists in controller
-            if (method_exists($this->currentController, $url[1])) {
-                $this->currentMethod = $url[1];
-                unset($url[1]);
-                }
-            }
+        // Check for method
+        if (isset($url[1]) && method_exists($this->currentController, $url[1])) {
+            $this->currentMethod = $url[1];
+            unset($url[1]);
+        }
 
         // Get parameters
         $this->params = $url ? array_values($url) : [];

@@ -1,2 +1,7 @@
 .env
 /vendor/
+# PHPUnit
+/phpunit.result.cache
+/.phpunit.cache/
+coverage/
+

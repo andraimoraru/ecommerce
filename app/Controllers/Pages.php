@@ -1,26 +1,30 @@
 <?php
- class Pages extends Controller {
-        private $postModel;
+declare(strict_types=1);
 
+namespace App\Controllers;
 
-        public function __construct() {
+use App\Core\Controller;
 
-        }
-        public function index() {
-            $data = [
-                'title' => 'Welcome to the modular e-commerce platform',
-            ];
-            $this->view('pages/index', $data);
+final class Pages extends Controller
+{
+    public function __construct()
+    {
+        // optional
+    }
 
+    public function index(): void
+    {
+        $data = [
+            'title' => 'Welcome to the modular e-commerce platform',
+        ];
+        $this->view('pages/index', $data);
+    }
 
-        }
-    
-        public function about() {
-            $data = [
-                'title' => 'About Us'
-            ];
-            $this->view('pages/about', $data);
-        }
-    
-
- }
+    public function about(): void
+    {
+        $data = [
+            'title' => 'About Us',
+        ];
+        $this->view('pages/about', $data);
+    }
+}
