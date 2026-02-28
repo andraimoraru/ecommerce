@@ -18,6 +18,7 @@
     "scripts": {
     "test": "vendor/bin/phpunit --configuration phpunit.xml",
     "test:unit": "vendor/bin/phpunit --configuration phpunit.xml --testsuite \"Unit Tests\"",
-    "test:integration": "vendor/bin/phpunit --configuration phpunit.xml --testsuite \"Integration Tests\""
+    "test:integration": "vendor/bin/phpunit --configuration phpunit.xml --testsuite \"Integration Tests\"",
+    "lint": "find app -name \"*.php\" -exec php -l {} \\;"
     }
 }
