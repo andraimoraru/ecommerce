@@ -29,4 +29,13 @@ $adminMw = [
 ];
 $router->get('/admin', 'Admin\\Dashboard@index', $adminMw);
 
+
+$router->get('/admin/categories', 'Admin\\Categories@index', $adminMw);
+$router->get('/admin/categories/create', 'Admin\\Categories@createForm', $adminMw);
+$router->post('/admin/categories', 'Admin\\Categories@store', $adminMw);
+
+$router->get('/admin/products', 'Admin\\Products@index', $adminMw);
+$router->get('/admin/products/create', 'Admin\\Products@createForm', $adminMw);
+$router->post('/admin/products', 'Admin\\Products@store', $adminMw);
+
 $router->dispatch();
