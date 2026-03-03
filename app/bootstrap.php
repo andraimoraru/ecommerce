@@ -1,11 +1,19 @@
 <?php
+declare(strict_types=1);
 
-
-// Composer autoload (PSR-4)
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
+$root = realpath(dirname(__DIR__));
+if ($root === false) {
+    throw new RuntimeException('Project root not found.');
+}
+
+$envFile = $root . '/.env';
+if (!file_exists($envFile)) {
+    throw new RuntimeException('.env not found at: ' . $envFile);
+}
+
+$dotenv = Dotenv\Dotenv::createImmutable($root);
 $dotenv->safeLoad();
 
-// Load Config
 require_once __DIR__ . '/config/config.php';
