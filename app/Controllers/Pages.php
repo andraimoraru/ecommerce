@@ -17,7 +17,6 @@ final class Pages extends Controller
         $data = [
             'title' => 'Welcome to the modular e-commerce platform',
         ];
-        $this->view('pages/index', $data);
     }
 
     public function about(): void

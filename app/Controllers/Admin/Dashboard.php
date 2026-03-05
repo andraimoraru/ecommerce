@@ -9,8 +9,15 @@ final class Dashboard extends Controller
 {
     public function index(): void
     {
-        $this->view('admin/index', [
+        $data = [
             'title' => 'Admin',
-        ]);
+        ];
+
+        ob_start();
+        // Make $data available to the view file
+        require APPROOT . '/Views/admin/index.php';
+        $content = ob_get_clean();
+
+        require APPROOT . '/Views/layouts/admin.php';
     }
 }

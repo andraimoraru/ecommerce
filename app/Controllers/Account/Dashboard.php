@@ -9,8 +9,14 @@ final class Dashboard extends Controller
 {
     public function index(): void
     {
-        $this->view('account/index', [
+        $data = [
             'title' => 'My Account',
-        ]);
+        ];
+
+        ob_start();
+        require APPROOT . '/Views/account/index.php';
+        $content = ob_get_clean();
+
+        require APPROOT . '/Views/layouts/main.php';
     }
 }
