@@ -10,31 +10,29 @@ final class Categories extends Controller
 {
     public function index(): void
     {
-        $categories = (new Category())->all();
+        $categories = (new \App\Models\Category())->all();
 
-        $this->view('admin/categories/index', [
+        $data = [
             'title' => 'Categories',
             'categories' => $categories,
-        ]);
+        ];
+
+        $this->render('admin/categories/index', $data, 'admin');
     }
 
     public function createForm(): void
     {
-        $parents = (new Category())->allActive();
+        $parents = (new \App\Models\Category())->allActive();
 
-        $this->view('admin/categories/create', [
+        $data = [
             'title' => 'Add Category',
             'parents' => $parents,
             'errors' => [],
-            'old' => [
-                'name' => '',
-                'slug' => '',
-                'parent_id' => '',
-                'is_active' => 1,
-            ],
-        ]);
-    }
+            'old' => [],
+        ];
 
+        $this->render('admin/categories/create', $data, 'admin');
+    }
     public function store(): void
     {
         $old = [

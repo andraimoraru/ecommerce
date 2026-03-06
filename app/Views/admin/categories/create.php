@@ -1,4 +1,3 @@
-<?php require APPROOT . '/Views/inc/header.php'; ?>
 
 <h1><?= htmlspecialchars($data['title']) ?></h1>
 
@@ -47,5 +46,3 @@
 </form>
 
 <p><a href="<?= URLROOT ?>/admin/categories">← Back</a></p>
-
-<?php require APPROOT . '/Views/inc/footer.php'; ?>

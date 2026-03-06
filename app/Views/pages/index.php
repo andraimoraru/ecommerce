@@ -1,5 +1,3 @@
-<?php require APPROOT . '/Views/inc/header.php'; ?>
+<h1>Welcome to <?= SITENAME ?></h1>
 
-<h1><?= htmlspecialchars($data['title'] ?? '', ENT_QUOTES, 'UTF-8'); ?></h1>
-
-<?php require APPROOT . '/Views/inc/footer.php'; ?>
+<p>This is the homepage.</p>

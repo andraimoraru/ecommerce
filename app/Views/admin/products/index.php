@@ -1,5 +1,3 @@
-<?php require APPROOT . '/Views/inc/header.php'; ?>
-
 <h1><?= htmlspecialchars($data['title'] ?? 'Products') ?></h1>
 
 <p>
@@ -70,5 +68,3 @@
     </tbody>
   </table>
 <?php endif; ?>
-
-<?php require APPROOT . '/Views/inc/footer.php'; ?>

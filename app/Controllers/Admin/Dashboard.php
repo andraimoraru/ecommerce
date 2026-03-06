@@ -9,8 +9,10 @@ final class Dashboard extends Controller
 {
     public function index(): void
     {
-        $this->view('admin/index', [
+        $data = [
             'title' => 'Admin',
-        ]);
+        ];
+
+        $this->render('admin/index', $data, 'admin');
     }
 }

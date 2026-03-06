@@ -33,13 +33,30 @@ abstract class Controller
     {
         $viewFile = APPROOT . '/Views/' . $view . '.php';
 
-        if (!is_file($viewFile)) {
-            http_response_code(500);
-            echo "View does not exist: " . htmlspecialchars($viewFile, ENT_QUOTES, 'UTF-8');
-            return;
+        if (!file_exists($viewFile)) {
+            throw new \RuntimeException('View not found: ' . $viewFile);
         }
 
-        // Make $data available inside the view 
         require $viewFile;
+    }
+
+    public function render(string $view, array $data = [], string $layout = 'main'): void
+    {
+        $viewFile = APPROOT . '/Views/' . $view . '.php';
+        $layoutFile = APPROOT . '/Views/layouts/' . $layout . '.php';
+
+        if (!file_exists($viewFile)) {
+            throw new \RuntimeException('View not found: ' . $viewFile);
+        }
+
+        if (!file_exists($layoutFile)) {
+            throw new \RuntimeException('Layout not found: ' . $layoutFile);
+        }
+
+        ob_start();
+        require $viewFile;
+        $content = ob_get_clean();
+
+        require $layoutFile;
     }
 }

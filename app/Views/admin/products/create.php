@@ -1,4 +1,3 @@
-<?php require APPROOT . '/Views/inc/header.php'; ?>
 <h1><?= htmlspecialchars($data['title']) ?></h1>
 
 <?php $old = $data['old'] ?? []; $errors = $data['errors'] ?? []; ?>
@@ -97,4 +96,3 @@
 </form>
 
 <p><a href="<?= URLROOT ?>/admin/products">← Back to products</a></p>
-<?php require APPROOT . '/Views/inc/footer.php'; ?>
