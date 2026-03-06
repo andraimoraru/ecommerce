@@ -89,7 +89,6 @@
       </div>
     <?php endforeach; ?>
 
-    <p><small>MVP: paste URLs. Next step: file upload + storage.</small></p>
   </fieldset>
 
   <button type="submit">Create product</button>
