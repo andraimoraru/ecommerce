@@ -14,109 +14,14 @@ final class Product
     {
         $db = new Database();
         $pdo = $db->getPdo();
+
         if (!$pdo instanceof PDO) {
             throw new \RuntimeException('DB connection not available: ' . ($db->getError() ?? 'unknown'));
         }
+
         $this->pdo = $pdo;
     }
 
-    public function skuExists(string $sku): bool
-    {
-        $stmt = $this->pdo->prepare("SELECT 1 FROM products WHERE sku = :sku LIMIT 1");
-        $stmt->execute(['sku' => $sku]);
-        return (bool)$stmt->fetchColumn();
-    }
-
-    public function slugExists(string $slug): bool
-    {
-        $stmt = $this->pdo->prepare("SELECT 1 FROM products WHERE slug = :slug LIMIT 1");
-        $stmt->execute(['slug' => $slug]);
-        return (bool)$stmt->fetchColumn();
-    }
-
-    /**
-     * Creates:
-     * - products row
-     * - product_categories row (single category)
-     * - inventory row
-     * - product_images rows (0..n)
-     */
-    public function createFull(array $data): int
-    {
-        $this->pdo->beginTransaction();
-
-        try {
-            // 1) Product
-            $stmt = $this->pdo->prepare("
-                INSERT INTO products (sku, name, slug, description, price_minor, currency, is_active)
-                VALUES (:sku, :name, :slug, :description, :price_minor, :currency, :is_active)
-            ");
-            $stmt->execute([
-                'sku' => $data['sku'],
-                'name' => $data['name'],
-                'slug' => $data['slug'],
-                'description' => $data['description'] !== '' ? $data['description'] : null,
-                'price_minor' => (int)$data['price_minor'],
-                'currency' => $data['currency'] ?? 'GBP',
-                'is_active' => (int)$data['is_active'],
-            ]);
-
-            $productId = (int)$this->pdo->lastInsertId();
-
-            // 2) Category link (optional, but you want it in form)
-            if (!empty($data['category_id'])) {
-                $stmt = $this->pdo->prepare("
-                    INSERT INTO product_categories (product_id, category_id)
-                    VALUES (:product_id, :category_id)
-                ");
-                $stmt->execute([
-                    'product_id' => $productId,
-                    'category_id' => (int)$data['category_id'],
-                ]);
-            }
-
-            // 3) Inventory (your schema uses stock_on_hand/stock_reserved)
-            $stmt = $this->pdo->prepare("
-                INSERT INTO inventory (product_id, stock_on_hand, stock_reserved)
-                VALUES (:product_id, :on_hand, :reserved)
-            ");
-            $stmt->execute([
-                'product_id' => $productId,
-                'on_hand' => (int)($data['stock_on_hand'] ?? 0),
-                'reserved' => 0,
-            ]);
-
-            // 4) Images (URLs)
-            $images = $data['images'] ?? [];
-            if (is_array($images) && count($images) > 0) {
-                $stmt = $this->pdo->prepare("
-                    INSERT INTO product_images (product_id, url, alt_text, sort_order)
-                    VALUES (:product_id, :url, :alt_text, :sort_order)
-                ");
-
-                $sort = 0;
-                foreach ($images as $img) {
-                    $url = trim((string)($img['url'] ?? ''));
-                    if ($url === '') continue;
-
-                    $stmt->execute([
-                        'product_id' => $productId,
-                        'url' => $url,
-                        'alt_text' => ($img['alt_text'] ?? '') !== '' ? trim((string)$img['alt_text']) : null,
-                        'sort_order' => isset($img['sort_order']) ? (int)$img['sort_order'] : $sort,
-                    ]);
-
-                    $sort++;
-                }
-            }
-
-            $this->pdo->commit();
-            return $productId;
-        } catch (\Throwable $e) {
-            $this->pdo->rollBack();
-            throw $e;
-        }
-    }
     /** @return array<int, array<string,mixed>> */
     public function allAdminWithMeta(): array
     {
@@ -128,7 +33,7 @@ final class Product
                 p.slug,
                 p.price_minor,
                 p.currency,
-                p.is_active,
+                p.status,
                 p.created_at,
                 c.name AS category_name,
                 i.stock_on_hand,
@@ -147,6 +52,210 @@ final class Product
             ORDER BY p.created_at DESC
         ");
 
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function findById(int $id): ?array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                p.*,
+                pc.category_id,
+                i.stock_on_hand,
+                i.stock_reserved
+            FROM products p
+            LEFT JOIN product_categories pc ON pc.product_id = p.id
+            LEFT JOIN inventory i ON i.product_id = p.id
+            WHERE p.id = :id
+            LIMIT 1
+        ");
+        $stmt->execute(['id' => $id]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    public function skuExists(string $sku, ?int $excludeId = null): bool
+    {
+        if ($excludeId !== null) {
+            $stmt = $this->pdo->prepare("
+                SELECT 1
+                FROM products
+                WHERE sku = :sku AND id != :id
+                LIMIT 1
+            ");
+            $stmt->execute([
+                'sku' => $sku,
+                'id' => $excludeId,
+            ]);
+        } else {
+            $stmt = $this->pdo->prepare("
+                SELECT 1
+                FROM products
+                WHERE sku = :sku
+                LIMIT 1
+            ");
+            $stmt->execute(['sku' => $sku]);
+        }
+
+        return (bool)$stmt->fetchColumn();
+    }
+
+    public function slugExists(string $slug, ?int $excludeId = null): bool
+    {
+        if ($excludeId !== null) {
+            $stmt = $this->pdo->prepare("
+                SELECT 1
+                FROM products
+                WHERE slug = :slug AND id != :id
+                LIMIT 1
+            ");
+            $stmt->execute([
+                'slug' => $slug,
+                'id' => $excludeId,
+            ]);
+        } else {
+            $stmt = $this->pdo->prepare("
+                SELECT 1
+                FROM products
+                WHERE slug = :slug
+                LIMIT 1
+            ");
+            $stmt->execute(['slug' => $slug]);
+        }
+
+        return (bool)$stmt->fetchColumn();
+    }
+
+    public function createFull(array $data): int
+    {
+        $this->pdo->beginTransaction();
+
+        try {
+            $stmt = $this->pdo->prepare("
+                INSERT INTO products (
+                    sku, name, slug, description, description_html,
+                    meta_title, meta_description, price_minor, currency, status
+                )
+                VALUES (
+                    :sku, :name, :slug, :description, :description_html,
+                    :meta_title, :meta_description, :price_minor, :currency, :status
+                )
+            ");
+
+            $stmt->execute([
+                'sku' => $data['sku'],
+                'name' => $data['name'],
+                'slug' => $data['slug'],
+                'description' => $data['description'] !== '' ? $data['description'] : null,
+                'description_html' => $data['description_html'] !== '' ? $data['description_html'] : null,
+                'meta_title' => $data['meta_title'] !== '' ? $data['meta_title'] : null,
+                'meta_description' => $data['meta_description'] !== '' ? $data['meta_description'] : null,
+                'price_minor' => (int)$data['price_minor'],
+                'currency' => $data['currency'],
+                'status' => $data['status'],
+            ]);
+
+            $productId = (int)$this->pdo->lastInsertId();
+
+            $this->syncCategory($productId, (int)($data['category_id'] ?? 0));
+            $this->syncInventory($productId, (int)($data['stock_on_hand'] ?? 0));
+
+            $this->pdo->commit();
+            return $productId;
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public function updateFull(int $id, array $data): void
+    {
+        $this->pdo->beginTransaction();
+
+        try {
+            $stmt = $this->pdo->prepare("
+                UPDATE products
+                SET
+                    sku = :sku,
+                    name = :name,
+                    slug = :slug,
+                    description = :description,
+                    description_html = :description_html,
+                    meta_title = :meta_title,
+                    meta_description = :meta_description,
+                    price_minor = :price_minor,
+                    currency = :currency,
+                    status = :status
+                WHERE id = :id
+            ");
+
+            $stmt->execute([
+                'id' => $id,
+                'sku' => $data['sku'],
+                'name' => $data['name'],
+                'slug' => $data['slug'],
+                'description' => $data['description'] !== '' ? $data['description'] : null,
+                'description_html' => $data['description_html'] !== '' ? $data['description_html'] : null,
+                'meta_title' => $data['meta_title'] !== '' ? $data['meta_title'] : null,
+                'meta_description' => $data['meta_description'] !== '' ? $data['meta_description'] : null,
+                'price_minor' => (int)$data['price_minor'],
+                'currency' => $data['currency'],
+                'status' => $data['status'],
+            ]);
+
+            $this->syncCategory($id, (int)($data['category_id'] ?? 0));
+            $this->syncInventory($id, (int)($data['stock_on_hand'] ?? 0));
+
+            $this->pdo->commit();
+        } catch (\Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
+    }
+
+    public function setStatus(int $id, string $status): void
+    {
+        $stmt = $this->pdo->prepare("
+            UPDATE products
+            SET status = :status
+            WHERE id = :id
+        ");
+
+        $stmt->execute([
+            'id' => $id,
+            'status' => $status,
+        ]);
+    }
+
+    private function syncCategory(int $productId, int $categoryId): void
+    {
+        $stmt = $this->pdo->prepare("DELETE FROM product_categories WHERE product_id = :product_id");
+        $stmt->execute(['product_id' => $productId]);
+
+        if ($categoryId > 0) {
+            $stmt = $this->pdo->prepare("
+                INSERT INTO product_categories (product_id, category_id)
+                VALUES (:product_id, :category_id)
+            ");
+            $stmt->execute([
+                'product_id' => $productId,
+                'category_id' => $categoryId,
+            ]);
+        }
+    }
+
+    private function syncInventory(int $productId, int $stockOnHand): void
+    {
+        $stmt = $this->pdo->prepare("
+            INSERT INTO inventory (product_id, stock_on_hand, stock_reserved)
+            VALUES (:product_id, :stock_on_hand, 0)
+            ON DUPLICATE KEY UPDATE stock_on_hand = VALUES(stock_on_hand)
+        ");
+
+        $stmt->execute([
+            'product_id' => $productId,
+            'stock_on_hand' => $stockOnHand,
+        ]);
     }
 }

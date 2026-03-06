@@ -1,70 +1,70 @@
 <h1><?= htmlspecialchars($data['title'] ?? 'Products') ?></h1>
 
-<p>
-  <a href="<?= URLROOT ?>/admin/products/create">+ Add product</a>
-</p>
+<div style="margin-bottom:20px;">
+    <a class="btn" href="<?= URLROOT ?>/admin/products/create">+ Add Product</a>
+</div>
 
 <?php $products = $data['products'] ?? []; ?>
 
 <?php if (count($products) === 0): ?>
-  <p>No products yet. Create your first one.</p>
+    <p>No products yet. Create your first one.</p>
 <?php else: ?>
-  <table border="1" cellpadding="8" cellspacing="0" style="width:100%; border-collapse:collapse;">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>SKU</th>
-        <th>Category</th>
-        <th>Price</th>
-        <th>Stock</th>
-        <th>Images</th>
-        <th>Active</th>
-        <th>Created</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php foreach ($products as $p): ?>
-        <tr>
-          <td><?= (int)$p['id'] ?></td>
-          <td>
-            <strong><?= htmlspecialchars((string)$p['name']) ?></strong><br>
-            <small><?= htmlspecialchars((string)$p['slug']) ?></small>
-          </td>
-          <td><?= htmlspecialchars((string)$p['sku']) ?></td>
-          <td><?= htmlspecialchars((string)($p['category_name'] ?? '—')) ?></td>
-          <td>
-            <?= htmlspecialchars((string)($p['currency'] ?? 'GBP')) ?>
-            <?= number_format(((int)$p['price_minor']) / 100, 2) ?>
-          </td>
-          <td>
-            On hand: <?= (int)($p['stock_on_hand'] ?? 0) ?><br>
-            <small>Reserved: <?= (int)($p['stock_reserved'] ?? 0) ?></small>
-          </td>
-          <td style="padding:10px;">
-                <?php if (!empty($p['primary_image'])): ?>
-                    <img src="<?= htmlspecialchars($p['primary_image']) ?>"
-                        alt=""
-                        style="width:60px; height:60px; object-fit:cover; border-radius:4px;">
-                <?php else: ?>
-                    <div style="
-                        width:60px;
-                        height:60px;
-                        background:#eee;
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        font-size:12px;
-                        color:#999;
-                        border-radius:4px;">
-                        No Image
-                    </div>
-                <?php endif; ?>
-          </td>
-          <td><?= ((int)$p['is_active'] === 1) ? 'Yes' : 'No' ?></td>
-          <td><?= htmlspecialchars((string)$p['created_at']) ?></td>
-        </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
+    <div class="card">
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr style="background:#f5f5f5;">
+                    <th style="padding:10px; text-align:left;">Image</th>
+                    <th style="padding:10px; text-align:left;">Name</th>
+                    <th style="padding:10px; text-align:left;">SKU</th>
+                    <th style="padding:10px; text-align:left;">Category</th>
+                    <th style="padding:10px; text-align:left;">Price</th>
+                    <th style="padding:10px; text-align:left;">Stock</th>
+                    <th style="padding:10px; text-align:left;">Status</th>
+                    <th style="padding:10px; text-align:left;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($products as $p): ?>
+                    <tr style="border-bottom:1px solid #ddd;">
+                        <td style="padding:10px;">
+                            <?php if (!empty($p['primary_image'])): ?>
+                                <img src="<?= htmlspecialchars((string)$p['primary_image']) ?>"
+                                     alt=""
+                                     style="width:60px;height:60px;object-fit:cover;border-radius:4px;">
+                            <?php else: ?>
+                                <div style="width:60px;height:60px;background:#eee;display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;border-radius:4px;">
+                                    No Image
+                                </div>
+                            <?php endif; ?>
+                        </td>
+
+                        <td style="padding:10px;">
+                            <strong><?= htmlspecialchars((string)$p['name']) ?></strong><br>
+                            <small style="color:#777;"><?= htmlspecialchars((string)$p['slug']) ?></small>
+                        </td>
+
+                        <td style="padding:10px;"><?= htmlspecialchars((string)$p['sku']) ?></td>
+                        <td style="padding:10px;"><?= htmlspecialchars((string)($p['category_name'] ?? '—')) ?></td>
+                        <td style="padding:10px;"><?= htmlspecialchars((string)($p['currency'] ?? 'GBP')) ?> <?= number_format(((int)$p['price_minor']) / 100, 2) ?></td>
+                        <td style="padding:10px;"><?= (int)($p['stock_on_hand'] ?? 0) ?></td>
+                        <td style="padding:10px;"><?= htmlspecialchars((string)$p['status']) ?></td>
+
+                        <td style="padding:10px;">
+                            <a class="btn secondary" href="<?= URLROOT ?>/admin/products/<?= (int)$p['id'] ?>/edit">Edit</a>
+
+                            <?php if (($p['status'] ?? '') !== 'ARCHIVED'): ?>
+                                <form action="<?= URLROOT ?>/admin/products/<?= (int)$p['id'] ?>/archive" method="post" style="display:inline;">
+                                    <button class="btn" type="submit">Archive</button>
+                                </form>
+                            <?php else: ?>
+                                <form action="<?= URLROOT ?>/admin/products/<?= (int)$p['id'] ?>/restore" method="post" style="display:inline;">
+                                    <button class="btn" type="submit">Restore</button>
+                                </form>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 <?php endif; ?>
