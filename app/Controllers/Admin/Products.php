@@ -13,34 +13,26 @@ final class Products extends Controller
     {
         $products = (new \App\Models\Product())->allAdminWithMeta();
 
-        $this->view('admin/products/index', [
+        $data = [
             'title' => 'Products',
             'products' => $products,
-        ]);
+        ];
+
+        $this->render('admin/products/index', $data, 'admin');
     }
+
     public function createForm(): void
     {
-        $categories = (new Category())->allActive();
+        $categories = (new \App\Models\Category())->allActive();
 
-        $this->view('admin/products/create', [
+        $data = [
             'title' => 'Add Product',
             'categories' => $categories,
             'errors' => [],
-            'old' => [
-                'name' => '',
-                'sku' => '',
-                'slug' => '',
-                'description' => '',
-                'price_minor' => '',
-                'currency' => 'GBP',
-                'is_active' => 1,
-                'category_id' => '',
-                'stock_on_hand' => 0,
-                'images' => [
-                    ['url' => '', 'alt_text' => '', 'sort_order' => 0],
-                ],
-            ],
-        ]);
+            'old' => [],
+        ];
+
+        $this->render('admin/products/create', $data, 'admin');
     }
 
     public function store(): void

@@ -1,5 +1,3 @@
-<a href="<?= URLROOT ?>">Home</a>
-<a href="<?= URLROOT ?>/products">Products</a>
 <a href="<?= URLROOT ?>/account">Account</a>
 
 <form action="<?= URLROOT ?>/logout" method="POST" style="display:inline;">

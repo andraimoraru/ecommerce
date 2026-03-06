@@ -15,8 +15,14 @@ final class Pages extends Controller
     public function index(): void
     {
         $data = [
-            'title' => 'Welcome to the modular e-commerce platform',
+            'title' => 'Welcome'
         ];
+
+        ob_start();
+        require APPROOT . '/Views/pages/index.php';
+        $content = ob_get_clean();
+
+        require APPROOT . '/Views/layouts/main.php';
     }
 
     public function about(): void

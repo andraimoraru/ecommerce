@@ -1,4 +1,4 @@
-<?php require APPROOT . '/Views/inc/header.php'; ?>
+
 
 <h1><?= htmlspecialchars($data['title']) ?></h1>
 
@@ -36,5 +36,3 @@
   </tbody>
 </table>
 <?php endif; ?>
-
-<?php require APPROOT . '/Views/inc/footer.php'; ?>
