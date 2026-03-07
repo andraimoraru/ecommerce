@@ -116,7 +116,7 @@ final class Auth extends Controller
         }
 
         // Send admins to admin area, customers to account
-        header('Location: ' . URLROOT . (($user['role'] === 'ADMIN') ? '/admin' : '/account'));
+        header('Location: ' . URLROOT . (($user['role'] === 'ADMIN') ? '/admin' : '/'));
         exit;
     }
 

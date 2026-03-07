@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Models\Product;
 
 final class Pages extends Controller
 {
@@ -14,15 +15,13 @@ final class Pages extends Controller
 
     public function index(): void
     {
+        $products = (new Product())->allActiveForStorefront(12);
+
         $data = [
-            'title' => 'Welcome'
+            'title' => 'Welcome to the modular e-commerce platform',
+            'products' => $products,
         ];
-
-        ob_start();
-        require APPROOT . '/Views/pages/index.php';
-        $content = ob_get_clean();
-
-        require APPROOT . '/Views/layouts/main.php';
+        $this->render('pages/index', $data, 'main');
     }
 
     public function about(): void
@@ -30,6 +29,6 @@ final class Pages extends Controller
         $data = [
             'title' => 'About Us',
         ];
-        $this->view('pages/about', $data);
+        $this->render('pages/about', $data, 'main');
     }
 }

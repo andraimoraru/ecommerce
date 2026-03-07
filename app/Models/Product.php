@@ -23,6 +23,7 @@ final class Product
     }
 
     /** @return array<int, array<string,mixed>> */
+    
     public function allAdminWithMeta(): array
     {
         $stmt = $this->pdo->query("
@@ -53,6 +54,62 @@ final class Product
         ");
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /** @return array<int, array<string,mixed>> */
+
+    public function allActiveForStorefront(int $limit = 12): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                p.id,
+                p.name,
+                p.slug,
+                p.description,
+                p.price_minor,
+                p.currency,
+                p.status,
+                (
+                    SELECT pi.url
+                    FROM product_images pi
+                    WHERE pi.product_id = p.id
+                    ORDER BY pi.sort_order ASC, pi.id ASC
+                    LIMIT 1
+                ) AS primary_image
+            FROM products p
+            WHERE p.status = 'ACTIVE'
+            ORDER BY p.created_at DESC
+            LIMIT :lim
+        ");
+
+        $stmt->bindValue(':lim', $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function findActiveBySlug(string $slug): ?array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                p.*,
+                (
+                    SELECT pi.url
+                    FROM product_images pi
+                    WHERE pi.product_id = p.id
+                    ORDER BY pi.sort_order ASC, pi.id ASC
+                    LIMIT 1
+                ) AS primary_image
+            FROM products p
+            WHERE p.slug = :slug
+            AND p.status = 'ACTIVE'
+            LIMIT 1
+        ");
+
+        $stmt->execute(['slug' => $slug]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        return $row ?: null;
     }
 
     public function findById(int $id): ?array
@@ -257,5 +314,39 @@ final class Product
             'product_id' => $productId,
             'stock_on_hand' => $stockOnHand,
         ]);
+    }
+
+    /** @return array<int, array<string,mixed>> */
+    public function allActiveByCategoryId(int $categoryId, int $limit = 48): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                p.id,
+                p.name,
+                p.slug,
+                p.description,
+                p.price_minor,
+                p.currency,
+                p.status,
+                (
+                    SELECT pi.url
+                    FROM product_images pi
+                    WHERE pi.product_id = p.id
+                    ORDER BY pi.sort_order ASC, pi.id ASC
+                    LIMIT 1
+                ) AS primary_image
+            FROM products p
+            INNER JOIN product_categories pc ON pc.product_id = p.id
+            WHERE pc.category_id = :category_id
+            AND p.status = 'ACTIVE'
+            ORDER BY p.created_at DESC
+            LIMIT :lim
+        ");
+
+        $stmt->bindValue(':category_id', $categoryId, \PDO::PARAM_INT);
+        $stmt->bindValue(':lim', $limit, \PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
