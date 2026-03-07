@@ -10,7 +10,7 @@ use App\Models\ProductImage;
 
 final class Products extends Controller
 {
-    public function index(): void
+        public function index(): void
     {
         $products = (new Product())->allAdminWithMeta();
 
@@ -20,6 +20,26 @@ final class Products extends Controller
         ];
 
         $this->render('admin/products/index', $data, 'admin');
+    }
+
+    public function show(array $params): void
+    {
+        $slug = (string)($params['slug'] ?? '');
+
+        $product = (new Product())->findActiveBySlug($slug);
+
+        if (!$product) {
+            http_response_code(404);
+            echo 'Product not found';
+            return;
+        }
+
+        $data = [
+            'title' => $product['meta_title'] ?? $product['name'],
+            'product' => $product,
+        ];
+
+        $this->render('products/show', $data, 'main');
     }
 
     public function createForm(): void

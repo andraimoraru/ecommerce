@@ -10,6 +10,13 @@ $router = new \App\Core\Router();
 // Public
 $router->get('/', 'Pages@index');
 $router->get('/about', 'Pages@about');
+$router->get('/products', 'Products@index');
+$router->get('/products/{slug}', 'Products@show');
+
+$router->get('/categories', 'Categories@index');
+$router->get('/categories/{slug}', 'Categories@show');
+
+
 
 $router->get('/register', 'Auth@registerForm');
 $router->post('/register', 'Auth@register');

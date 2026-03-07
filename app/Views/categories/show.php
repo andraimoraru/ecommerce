@@ -1,10 +1,19 @@
-<h1 style="margin-bottom:10px;">Welcome to <?= htmlspecialchars(SITENAME) ?></h1>
-<p style="margin-bottom:30px;">Browse our latest products.</p>
-
+<?php $category = $data['category'] ?? null; ?>
 <?php $products = $data['products'] ?? []; ?>
 
+<a class="category-back" href="<?= URLROOT ?>/categories">← Back to categories</a>
+
+<div class="category-header">
+    <h1 class="category-title">
+        <?= htmlspecialchars((string)($category['name'] ?? 'Category')) ?>
+    </h1>
+    <p class="category-subtitle">
+        Browse products in this category.
+    </p>
+</div>
+
 <?php if (!$products): ?>
-    <p>No products available yet.</p>
+    <p>No active products found in this category yet.</p>
 <?php else: ?>
     <div class="product-grid">
         <?php foreach ($products as $product): ?>
@@ -25,6 +34,11 @@
 
                     <h3 class="product-title"><?= htmlspecialchars((string)$product['name']) ?></h3>
                 </a>
+
+                <p class="product-desc">
+                    <?= htmlspecialchars(mb_strimwidth(strip_tags((string)($product['description'] ?? '')), 0, 100, '...')) ?>
+                </p>
+
                 <p class="product-price">
                     <?= htmlspecialchars((string)($product['currency'] ?? 'GBP')) ?>
                     <?= number_format(((int)$product['price_minor']) / 100, 2) ?>

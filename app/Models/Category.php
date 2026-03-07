@@ -72,4 +72,53 @@ final class Category
 
         return (int)$this->pdo->lastInsertId();
     }
+        /** @return array<int, array<string,mixed>> */
+
+    public function allActiveForStorefront(): array
+    {
+        $stmt = $this->pdo->query("
+            SELECT
+                c.id,
+                c.name,
+                c.slug,
+                c.parent_id,
+                COUNT(pc.product_id) AS product_count
+            FROM categories c
+            LEFT JOIN product_categories pc ON pc.category_id = c.id
+            WHERE c.is_active = 1
+            GROUP BY c.id, c.name, c.slug, c.parent_id
+            ORDER BY c.name ASC
+        ");
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function findActiveBySlug(string $slug): ?array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT id, name, slug, parent_id, is_active, created_at
+            FROM categories
+            WHERE slug = :slug
+            AND is_active = 1
+            LIMIT 1
+        ");
+        $stmt->execute(['slug' => $slug]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    public function findBySlug(string $slug): ?array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT id, name, slug, parent_id, is_active, created_at
+            FROM categories
+            WHERE slug = :slug
+            LIMIT 1
+        ");
+        $stmt->execute(['slug' => $slug]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
 }
