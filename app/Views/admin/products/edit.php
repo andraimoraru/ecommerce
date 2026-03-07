@@ -2,12 +2,16 @@
 
 <?php $p = $data['product']; ?>
 <?php $errors = $data['errors'] ?? []; ?>
+<?php $images = $data['images'] ?? []; ?>
 
-<form method="post" action="<?= URLROOT ?>/admin/products/<?= (int)$p['id'] ?>">
+<div class="grid-2">
 
-    <div class="grid-2">
+    <!-- LEFT COLUMN -->
+    <div>
 
-        <div>
+        <!-- MAIN PRODUCT EDIT FORM -->
+        <form method="post" action="<?= URLROOT ?>/admin/products/<?= (int)$p['id'] ?>">
+
             <div class="card">
                 <h2>Core</h2>
 
@@ -50,78 +54,6 @@
                 <textarea name="meta_description" rows="4" style="width:100%;"><?= htmlspecialchars((string)($p['meta_description'] ?? '')) ?></textarea>
             </div>
 
-            <div class="card">
-                <h2>Images</h2>
-
-                <?php $images = $data['images'] ?? []; ?>
-
-                <?php if (!$images): ?>
-                    <p>No images yet.</p>
-                <?php else: ?>
-                    <?php foreach ($images as $img): ?>
-                        <div style="border:1px solid #ddd; padding:12px; border-radius:8px; margin-bottom:12px;">
-                            <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
-
-                                <div>
-                                    <img src="<?= htmlspecialchars((string)$img['url']) ?>"
-                                        alt="<?= htmlspecialchars((string)($img['alt_text'] ?? '')) ?>"
-                                        style="width:100px;height:100px;object-fit:cover;border-radius:6px;border:1px solid #ddd;">
-                                </div>
-
-                                <div style="flex:1; min-width:260px;">
-                                    <form method="post"
-                                        action="<?= URLROOT ?>/admin/products/<?= (int)$p['id'] ?>/images/upload"
-                                        enctype="multipart/form-data">
-
-                                        <label>Image file</label><br>
-                                        <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" required><br><br>
-
-                                        <label>Alt text</label><br>
-                                        <input type="text" name="alt_text"><br><br>
-
-                                        <label>Sort order</label><br>
-                                        <input type="number" name="sort_order" value="0"><br><br>
-
-                                        <button class="btn" type="submit">Upload Image</button>
-                                    </form>
-                                </div>
-
-                                <div>
-                                    <form method="post" action="<?= URLROOT ?>/admin/products/<?= (int)$p['id'] ?>/images/<?= (int)$img['id'] ?>/delete" onsubmit="return confirm('Delete this image?');">
-                                        <button class="btn" type="submit">Delete</button>
-                                    </form>
-                                </div>
-
-                            </div>
-
-                            <?php if ((int)$img['sort_order'] === 0): ?>
-                                <p style="margin-top:8px; color:#666;"><small>Primary image (sort_order = 0)</small></p>
-                            <?php endif; ?>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-
-                <hr style="margin:18px 0;">
-
-                <h3>Add New Image</h3>
-
-                    <form method="post"
-                        action="<?= URLROOT ?>/admin/products/<?= (int)$p['id'] ?>/images/upload"
-                        enctype="multipart/form-data">
-
-                        <label>Image file</label><br>
-                        <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" required><br><br>
-
-                        <label>Alt text</label><br>
-                        <input type="text" name="alt_text"><br><br>
-
-                        <label>Sort order</label><br>
-                        <input type="number" name="sort_order" value="0"><br><br>
-
-                        <button class="btn" type="submit">Upload Image</button>
-                    </form>
-            </div>
-        <div>
             <div class="card">
                 <h2>Pricing & Status</h2>
 
@@ -169,7 +101,81 @@
                 <button class="btn" type="submit">Save Changes</button>
                 <a class="btn secondary" href="<?= URLROOT ?>/admin/products">Cancel</a>
             </div>
+
+        </form>
+        <!-- END MAIN PRODUCT FORM -->
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div>
+
+        <div class="card">
+            <h2>Images</h2>
+
+            <?php if (!$images): ?>
+                <p>No images yet.</p>
+            <?php else: ?>
+                <?php foreach ($images as $img): ?>
+                    <div style="border:1px solid #ddd; padding:12px; border-radius:8px; margin-bottom:12px;">
+                        <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+
+                            <div>
+                                <img src="<?= htmlspecialchars((string)$img['url']) ?>"
+                                     alt="<?= htmlspecialchars((string)($img['alt_text'] ?? '')) ?>"
+                                     style="width:100px;height:100px;object-fit:cover;border-radius:6px;border:1px solid #ddd;">
+                            </div>
+
+                            <div style="flex:1; min-width:260px;">
+                                <form method="post" action="<?= URLROOT ?>/admin/products/<?= (int)$p['id'] ?>/images/<?= (int)$img['id'] ?>/update">
+                                    <label>Alt text</label><br>
+                                    <input name="alt_text" value="<?= htmlspecialchars((string)($img['alt_text'] ?? '')) ?>" style="width:100%;"><br><br>
+
+                                    <label>Sort order</label><br>
+                                    <input type="number" name="sort_order" value="<?= (int)$img['sort_order'] ?>" style="width:120px;"><br><br>
+
+                                    <button class="btn secondary" type="submit">Update Image</button>
+                                </form>
+                            </div>
+
+                            <div>
+                                <form method="post"
+                                      action="<?= URLROOT ?>/admin/products/<?= (int)$p['id'] ?>/images/<?= (int)$img['id'] ?>/delete"
+                                      onsubmit="return confirm('Delete this image?');">
+                                    <button class="btn" type="submit">Delete</button>
+                                </form>
+                            </div>
+
+                        </div>
+
+                        <?php if ((int)$img['sort_order'] === 0): ?>
+                            <p style="margin-top:8px; color:#666;"><small>Primary image (lowest sort order)</small></p>
+                        <?php endif; ?>
+                    </div>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+
+        <div class="card">
+            <h2>Upload New Image</h2>
+
+            <form method="post"
+                  action="<?= URLROOT ?>/admin/products/<?= (int)$p['id'] ?>/images/upload"
+                  enctype="multipart/form-data">
+
+                <label>Image file</label><br>
+                <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" required><br><br>
+
+                <label>Alt text</label><br>
+                <input type="text" name="alt_text" style="width:100%;"><br><br>
+
+                <label>Sort order</label><br>
+                <input type="number" name="sort_order" value="0" style="width:120px;"><br><br>
+
+                <button class="btn" type="submit">Upload Image</button>
+            </form>
         </div>
 
     </div>
-</form>
+
+</div>
