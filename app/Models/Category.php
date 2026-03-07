@@ -23,6 +23,7 @@ final class Category
     }
 
     /** @return array<int, array<string,mixed>> */
+
     public function all(): array
     {
         $stmt = $this->pdo->query("
@@ -35,6 +36,7 @@ final class Category
     }
 
     /** @return array<int, array<string,mixed>> */
+    
     public function allActive(): array
     {
         $stmt = $this->pdo->query("

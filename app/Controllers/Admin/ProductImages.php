@@ -66,6 +66,7 @@ final class ProductImages extends Controller
         header('Location: ' . URLROOT . '/admin/products/' . $productId . '/edit');
         exit;
     }
+    
     public function upload(array $params): void
     {
         $productId = (int)($params['id'] ?? 0);

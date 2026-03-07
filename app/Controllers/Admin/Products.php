@@ -6,6 +6,7 @@ namespace App\Controllers\Admin;
 use App\Core\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductImage;
 
 final class Products extends Controller
 {
@@ -57,6 +58,7 @@ final class Products extends Controller
         }
 
         $errors = $this->validate($old);
+        $errors = array_merge($errors, $this->validateUploadedImages());
 
         $productModel = new Product();
 
@@ -70,6 +72,7 @@ final class Products extends Controller
 
         if ($errors) {
             $categories = (new Category())->allActive();
+
             $this->render('admin/products/create', [
                 'title' => 'Add Product',
                 'categories' => $categories,
@@ -79,7 +82,8 @@ final class Products extends Controller
             return;
         }
 
-        $productModel->createFull($old);
+        $productId = $productModel->createFull($old);
+        $this->processUploadedImages($productId);
 
         header('Location: ' . URLROOT . '/admin/products');
         exit;
@@ -90,7 +94,6 @@ final class Products extends Controller
         $id = (int)($params['id'] ?? 0);
 
         $product = (new Product())->findById($id);
-        $images = (new \App\Models\ProductImage())->forProduct($id);
 
         if (!$product) {
             http_response_code(404);
@@ -98,6 +101,7 @@ final class Products extends Controller
             return;
         }
 
+        $images = (new ProductImage())->forProduct($id);
         $categories = (new Category())->allActive();
 
         $this->render('admin/products/edit', [
@@ -115,7 +119,6 @@ final class Products extends Controller
 
         $productModel = new Product();
         $existing = $productModel->findById($id);
-        $images = (new \App\Models\ProductImage())->forProduct($id);
 
         if (!$existing) {
             http_response_code(404);
@@ -123,6 +126,7 @@ final class Products extends Controller
             return;
         }
 
+        $images = (new ProductImage())->forProduct($id);
         $old = $this->collectInput();
 
         if ($old['slug'] === '') {
@@ -141,7 +145,6 @@ final class Products extends Controller
 
         if ($errors) {
             $categories = (new Category())->allActive();
-
             $product = array_merge($existing, $old);
 
             $this->render('admin/products/edit', [
@@ -193,6 +196,8 @@ final class Products extends Controller
             'status' => trim((string)($_POST['status'] ?? 'DRAFT')) ?: 'DRAFT',
             'category_id' => (int)($_POST['category_id'] ?? 0),
             'stock_on_hand' => (int)($_POST['stock_on_hand'] ?? 0),
+            'image_alt' => $_POST['image_alt'] ?? [],
+            'image_sort' => $_POST['image_sort'] ?? [],
         ];
     }
 
@@ -227,11 +232,114 @@ final class Products extends Controller
         return $errors;
     }
 
+    private function validateUploadedImages(): array
+    {
+        $errors = [];
+
+        if (!isset($_FILES['images'])) {
+            return $errors;
+        }
+
+        $allowedMime = [
+            'image/jpeg',
+            'image/png',
+            'image/webp',
+        ];
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+
+        foreach ($_FILES['images']['tmp_name'] as $i => $tmpName) {
+            $error = $_FILES['images']['error'][$i] ?? UPLOAD_ERR_NO_FILE;
+
+            if ($error === UPLOAD_ERR_NO_FILE) {
+                continue;
+            }
+
+            if ($error !== UPLOAD_ERR_OK) {
+                $errors['images'] = 'One or more images failed to upload.';
+                break;
+            }
+
+            $mime = $finfo->file($tmpName);
+            if (!in_array($mime, $allowedMime, true)) {
+                $errors['images'] = 'Only JPG, PNG, and WEBP images are allowed.';
+                break;
+            }
+
+            $size = (int)($_FILES['images']['size'][$i] ?? 0);
+            if ($size > 5 * 1024 * 1024) {
+                $errors['images'] = 'Each image must be 5MB or smaller.';
+                break;
+            }
+        }
+
+        return $errors;
+    }
+
     private function slugify(string $name): string
     {
         $s = mb_strtolower(trim($name));
         $s = preg_replace('/[^a-z0-9]+/u', '-', $s) ?? '';
         $s = trim($s, '-');
         return $s !== '' ? $s : 'product';
+    }
+
+    private function processUploadedImages(int $productId): void
+    {
+        if (!isset($_FILES['images'])) {
+            return;
+        }
+
+        $files = $_FILES['images'];
+        $alts = $_POST['image_alt'] ?? [];
+        $sorts = $_POST['image_sort'] ?? [];
+
+        $allowedMime = [
+            'image/jpeg' => 'jpg',
+            'image/png'  => 'png',
+            'image/webp' => 'webp',
+        ];
+
+        $uploadDir = APPROOT . '/../public/uploads/products/' . $productId;
+
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0775, true);
+        }
+
+        $imageModel = new ProductImage();
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+
+        foreach ($files['tmp_name'] as $i => $tmpName) {
+            if (($files['error'][$i] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
+                continue;
+            }
+
+            if (($files['error'][$i] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
+                continue;
+            }
+
+            $mime = $finfo->file($tmpName);
+            if (!isset($allowedMime[$mime])) {
+                continue;
+            }
+
+            if (($files['size'][$i] ?? 0) > 5 * 1024 * 1024) {
+                continue;
+            }
+
+            $extension = $allowedMime[$mime];
+            $fileName = bin2hex(random_bytes(16)) . '.' . $extension;
+            $destination = $uploadDir . '/' . $fileName;
+
+            if (!move_uploaded_file($tmpName, $destination)) {
+                continue;
+            }
+
+            $relativePath = '/uploads/products/' . $productId . '/' . $fileName;
+            $altText = trim((string)($alts[$i] ?? ''));
+            $sortOrder = (int)($sorts[$i] ?? $i);
+
+            $imageModel->create($productId, $relativePath, $altText, $sortOrder);
+        }
     }
 }
