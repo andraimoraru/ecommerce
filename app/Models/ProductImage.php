@@ -23,6 +23,7 @@ final class ProductImage
     }
 
     /** @return array<int, array<string,mixed>> */
+
     public function forProduct(int $productId): array
     {
         $stmt = $this->pdo->prepare("
@@ -53,12 +54,29 @@ final class ProductImage
         return (int)$this->pdo->lastInsertId();
     }
 
-    public function update(int $id, int $productId, string $url, ?string $altText, int $sortOrder): void
+    public function findById(int $id, int $productId): ?array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT id, product_id, url, alt_text, sort_order, created_at
+            FROM product_images
+            WHERE id = :id AND product_id = :product_id
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            'id' => $id,
+            'product_id' => $productId,
+        ]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    public function updateMeta(int $id, int $productId, ?string $altText, int $sortOrder): void
     {
         $stmt = $this->pdo->prepare("
             UPDATE product_images
-            SET url = :url,
-                alt_text = :alt_text,
+            SET alt_text = :alt_text,
                 sort_order = :sort_order
             WHERE id = :id AND product_id = :product_id
         ");
@@ -66,7 +84,6 @@ final class ProductImage
         $stmt->execute([
             'id' => $id,
             'product_id' => $productId,
-            'url' => $url,
             'alt_text' => $altText !== '' ? $altText : null,
             'sort_order' => $sortOrder,
         ]);

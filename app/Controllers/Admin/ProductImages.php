@@ -9,29 +9,6 @@ use App\Models\ProductImage;
 
 final class ProductImages extends Controller
 {
-    public function store(array $params): void
-    {
-        $productId = (int)($params['id'] ?? 0);
-
-        $product = (new Product())->findById($productId);
-        if (!$product) {
-            http_response_code(404);
-            echo 'Product not found';
-            return;
-        }
-
-        $url = trim((string)($_POST['url'] ?? ''));
-        $altText = trim((string)($_POST['alt_text'] ?? ''));
-        $sortOrder = (int)($_POST['sort_order'] ?? 0);
-
-        if ($url !== '' && filter_var($url, FILTER_VALIDATE_URL)) {
-            (new ProductImage())->create($productId, $url, $altText, $sortOrder);
-        }
-
-        header('Location: ' . URLROOT . '/admin/products/' . $productId . '/edit');
-        exit;
-    }
-
     public function update(array $params): void
     {
         $productId = (int)($params['id'] ?? 0);
@@ -44,13 +21,10 @@ final class ProductImages extends Controller
             return;
         }
 
-        $url = trim((string)($_POST['url'] ?? ''));
         $altText = trim((string)($_POST['alt_text'] ?? ''));
         $sortOrder = (int)($_POST['sort_order'] ?? 0);
 
-        if ($url !== '' && filter_var($url, FILTER_VALIDATE_URL)) {
-            (new ProductImage())->update($imageId, $productId, $url, $altText, $sortOrder);
-        }
+        (new ProductImage())->updateMeta($imageId, $productId, $altText, $sortOrder);
 
         header('Location: ' . URLROOT . '/admin/products/' . $productId . '/edit');
         exit;
@@ -61,15 +35,32 @@ final class ProductImages extends Controller
         $productId = (int)($params['id'] ?? 0);
         $imageId = (int)($params['imageId'] ?? 0);
 
-        (new ProductImage())->delete($imageId, $productId);
+        $imageModel = new ProductImage();
+        $image = $imageModel->findById($imageId, $productId);
+
+        if ($image) {
+            $fullPath = APPROOT . '/../public' . $image['url'];
+            if (is_file($fullPath)) {
+                @unlink($fullPath);
+            }
+        }
+
+        $imageModel->delete($imageId, $productId);
 
         header('Location: ' . URLROOT . '/admin/products/' . $productId . '/edit');
         exit;
     }
-    
+
     public function upload(array $params): void
     {
         $productId = (int)($params['id'] ?? 0);
+
+        $product = (new Product())->findById($productId);
+        if (!$product) {
+            http_response_code(404);
+            echo 'Product not found';
+            return;
+        }
 
         if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
             header('Location: ' . URLROOT . '/admin/products/' . $productId . '/edit');
@@ -88,7 +79,7 @@ final class ProductImages extends Controller
         $mime = $finfo->file($file['tmp_name']);
 
         if (!isset($allowedMime[$mime])) {
-            die('Invalid image type.');
+            die('Invalid image type. Allowed: JPG, PNG, WEBP.');
         }
 
         if ($file['size'] > 5 * 1024 * 1024) {
@@ -114,7 +105,7 @@ final class ProductImages extends Controller
         $altText = trim((string)($_POST['alt_text'] ?? ''));
         $sortOrder = (int)($_POST['sort_order'] ?? 0);
 
-        (new \App\Models\ProductImage())->create($productId, $relativePath, $altText, $sortOrder);
+        (new ProductImage())->create($productId, $relativePath, $altText, $sortOrder);
 
         header('Location: ' . URLROOT . '/admin/products/' . $productId . '/edit');
         exit;

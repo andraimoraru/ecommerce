@@ -44,10 +44,9 @@ $router->post('/admin/products/{id}', 'Admin\\Products@update', $adminMw);
 $router->post('/admin/products/{id}/archive', 'Admin\\Products@archive', $adminMw);
 $router->post('/admin/products/{id}/restore', 'Admin\\Products@restore', $adminMw);
 
-$router->post('/admin/products/{id}/images', 'Admin\\ProductImages@store', $adminMw);
+
 $router->post('/admin/products/{id}/images/{imageId}/update', 'Admin\\ProductImages@update', $adminMw);
 $router->post('/admin/products/{id}/images/{imageId}/delete', 'Admin\\ProductImages@delete', $adminMw);
-
 $router->post('/admin/products/{id}/images/upload', 'Admin\\ProductImages@upload', $adminMw);
 
 $router->dispatch();
