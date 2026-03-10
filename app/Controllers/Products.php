@@ -24,7 +24,8 @@ final class Products extends Controller
     {
         $slug = (string)($params['slug'] ?? '');
 
-        $product = (new Product())->findActiveBySlug($slug);
+        $productModel = new Product();
+        $product = $productModel->findActiveBySlug($slug);
 
         if (!$product) {
             http_response_code(404);
@@ -32,9 +33,12 @@ final class Products extends Controller
             return;
         }
 
+        $images = $productModel->allImagesForProduct((int)$product['id']);
+
         $data = [
-            'title' => $product['meta_title'] ?? $product['name'],
+            'title' => $product['meta_title'] ?: $product['name'],
             'product' => $product,
+            'images' => $images,
         ];
 
         $this->render('products/show', $data, 'main');

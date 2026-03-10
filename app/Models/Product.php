@@ -21,8 +21,6 @@ final class Product
 
         $this->pdo = $pdo;
     }
-
-    /** @return array<int, array<string,mixed>> */
     
     public function allAdminWithMeta(): array
     {
@@ -55,8 +53,6 @@ final class Product
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
-    /** @return array<int, array<string,mixed>> */
 
     public function allActiveForStorefront(int $limit = 12): array
     {
@@ -316,7 +312,6 @@ final class Product
         ]);
     }
 
-    /** @return array<int, array<string,mixed>> */
     public function allActiveByCategoryId(int $categoryId, int $limit = 48): array
     {
         $stmt = $this->pdo->prepare("
@@ -346,6 +341,20 @@ final class Product
         $stmt->bindValue(':category_id', $categoryId, \PDO::PARAM_INT);
         $stmt->bindValue(':lim', $limit, \PDO::PARAM_INT);
         $stmt->execute();
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public function allImagesForProduct(int $productId): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT id, url, alt_text, sort_order
+            FROM product_images
+            WHERE product_id = :product_id
+            ORDER BY sort_order ASC, id ASC
+        ");
+
+        $stmt->execute(['product_id' => $productId]);
 
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
