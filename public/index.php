@@ -16,7 +16,7 @@ $router->get('/products/{slug}', 'Products@show');
 $router->get('/categories', 'Categories@index');
 $router->get('/categories/{slug}', 'Categories@show');
 
-
+$router->get('/products/{slug}', 'Products@show');
 
 $router->get('/register', 'Auth@registerForm');
 $router->post('/register', 'Auth@register');
