@@ -56,4 +56,9 @@ $router->post('/admin/products/{id}/images/{imageId}/update', 'Admin\\ProductIma
 $router->post('/admin/products/{id}/images/{imageId}/delete', 'Admin\\ProductImages@delete', $adminMw);
 $router->post('/admin/products/{id}/images/upload', 'Admin\\ProductImages@upload', $adminMw);
 
+$router->get('/cart', 'Cart@index');
+$router->post('/cart/items', 'Cart@add');
+$router->post('/cart/update', 'Cart@update');
+$router->post('/cart/remove', 'Cart@remove');
+
 $router->dispatch();

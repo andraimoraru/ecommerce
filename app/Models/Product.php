@@ -358,4 +358,41 @@ final class Product
 
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    public function findManyForCart(array $productIds): array
+    {
+        if (empty($productIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+
+        $stmt = $this->pdo->prepare("
+            SELECT
+                p.id,
+                p.name,
+                p.slug,
+                p.price_minor,
+                p.currency,
+                p.status,
+                (
+                    SELECT pi.url
+                    FROM product_images pi
+                    WHERE pi.product_id = p.id
+                    ORDER BY pi.sort_order ASC, pi.id ASC
+                    LIMIT 1
+                ) AS primary_image
+            FROM products p
+            WHERE p.id IN ($placeholders)
+            AND p.status = 'ACTIVE'
+        ");
+
+        foreach ($productIds as $i => $id) {
+            $stmt->bindValue($i + 1, (int)$id, \PDO::PARAM_INT);
+        }
+
+        $stmt->execute();
+
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }
