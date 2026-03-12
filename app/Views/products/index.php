@@ -35,9 +35,15 @@
                 </p>
 
                 <form method="post" action="<?= URLROOT ?>/cart/items">
+
                     <input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>">
-                    <input type="hidden" name="quantity" value="1">
-                    <button type="submit" class="add-cart-btn">Add to cart</button>
+
+                    <input type="number" name="quantity" value="1" min="1">
+
+                    <button class="add-cart-btn">
+                        Add to Cart
+                    </button>
+
                 </form>
 
             </div>

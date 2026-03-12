@@ -4,55 +4,17 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Controller;
-use App\Models\Product;
+use App\Models\Cart as CartModel;
 
 final class Cart extends Controller
 {
     public function index(): void
     {
-        $sessionCart = $_SESSION['cart'] ?? [];
-
-        $items = [];
-        $subtotalMinor = 0;
-
-        if (!empty($sessionCart)) {
-            $productIds = array_map('intval', array_keys($sessionCart));
-            $products = (new Product())->findManyForCart($productIds);
-
-            $productsById = [];
-            foreach ($products as $product) {
-                $productsById[(int)$product['id']] = $product;
-            }
-
-            foreach ($sessionCart as $productId => $qty) {
-                $productId = (int)$productId;
-                $qty = (int)$qty;
-
-                if (!isset($productsById[$productId])) {
-                    continue;
-                }
-
-                $product = $productsById[$productId];
-                $lineTotalMinor = ((int)$product['price_minor']) * $qty;
-                $subtotalMinor += $lineTotalMinor;
-
-                $items[] = [
-                    'product_id' => $productId,
-                    'name' => $product['name'],
-                    'slug' => $product['slug'],
-                    'primary_image' => $product['primary_image'],
-                    'currency' => $product['currency'],
-                    'price_minor' => (int)$product['price_minor'],
-                    'quantity' => $qty,
-                    'line_total_minor' => $lineTotalMinor,
-                ];
-            }
-        }
+        $cart = (new CartModel())->getFull();
 
         $data = [
             'title' => 'Your Cart',
-            'items' => $items,
-            'subtotal_minor' => $subtotalMinor,
+            'cart' => $cart,
         ];
 
         $this->render('cart/index', $data, 'main');
@@ -61,14 +23,14 @@ final class Cart extends Controller
     public function add(): void
     {
         $productId = (int)($_POST['product_id'] ?? 0);
-        $quantity = max(1, (int)($_POST['quantity'] ?? 1));
+        $qty = max(1, (int)($_POST['quantity'] ?? 1));
 
         if ($productId <= 0) {
-            header('Location: ' . URLROOT . '/products');
+            header('Location: ' . URLROOT);
             exit;
         }
 
-        if (!isset($_SESSION['cart'])) {
+        if (!isset($_SESSION['cart']) || !is_array($_SESSION['cart'])) {
             $_SESSION['cart'] = [];
         }
 
@@ -76,7 +38,7 @@ final class Cart extends Controller
             $_SESSION['cart'][$productId] = 0;
         }
 
-        $_SESSION['cart'][$productId] += $quantity;
+        $_SESSION['cart'][$productId] += $qty;
 
         header('Location: ' . URLROOT . '/cart');
         exit;

@@ -370,6 +370,7 @@ final class Product
         $stmt = $this->pdo->prepare("
             SELECT
                 p.id,
+                p.sku,
                 p.name,
                 p.slug,
                 p.price_minor,

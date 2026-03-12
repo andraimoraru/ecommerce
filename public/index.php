@@ -61,4 +61,8 @@ $router->post('/cart/items', 'Cart@add');
 $router->post('/cart/update', 'Cart@update');
 $router->post('/cart/remove', 'Cart@remove');
 
+$router->get('/checkout', 'Checkout@index');
+$router->post('/checkout', 'Checkout@store');
+$router->get('/checkout/success', 'Checkout@success');
+
 $router->dispatch();
