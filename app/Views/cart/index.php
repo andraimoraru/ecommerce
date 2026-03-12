@@ -59,62 +59,6 @@
                 <?php endforeach; ?>
             </div>
 
-            <div class="cart-card">
-                <h2>Shipping Address</h2>
-
-                <div class="checkout-grid">
-                    <div>
-                        <label>First Name</label><br>
-                        <input type="text" name="shipping_first_name" style="width:100%;">
-                    </div>
-
-                    <div>
-                        <label>Last Name</label><br>
-                        <input type="text" name="shipping_last_name" style="width:100%;">
-                    </div>
-
-                    <div>
-                        <label>Email</label><br>
-                        <input type="email" name="shipping_email" style="width:100%;">
-                    </div>
-
-                    <div>
-                        <label>Phone</label><br>
-                        <input type="text" name="shipping_phone" style="width:100%;">
-                    </div>
-
-                    <div style="grid-column:1 / -1;">
-                        <label>Address Line 1</label><br>
-                        <input type="text" name="shipping_line1" style="width:100%;">
-                    </div>
-
-                    <div style="grid-column:1 / -1;">
-                        <label>Address Line 2</label><br>
-                        <input type="text" name="shipping_line2" style="width:100%;">
-                    </div>
-
-                    <div>
-                        <label>City</label><br>
-                        <input type="text" name="shipping_city" style="width:100%;">
-                    </div>
-
-                    <div>
-                        <label>Region / County</label><br>
-                        <input type="text" name="shipping_region" style="width:100%;">
-                    </div>
-
-                    <div>
-                        <label>Postcode</label><br>
-                        <input type="text" name="shipping_postcode" style="width:100%;">
-                    </div>
-
-                    <div>
-                        <label>Country</label><br>
-                        <input type="text" name="shipping_country" value="GB" style="width:100%;">
-                    </div>
-                </div>
-            </div>
-
     </div>
            <div class="cart-sidebar">
             <div class="cart-card">
@@ -138,7 +82,7 @@
                 </p>
 
                 <button class="add-cart-btn" type="button">
-                    Continue to Payment
+                    Continue to Checkout
                 </button>
             </div>
         </div>
