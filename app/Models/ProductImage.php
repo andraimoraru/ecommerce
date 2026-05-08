@@ -10,6 +10,7 @@ final class ProductImage
 {
     private PDO $pdo;
 
+    // Bootstrap a PDO-backed product image model.
     public function __construct()
     {
         $db = new Database();
@@ -23,7 +24,7 @@ final class ProductImage
     }
 
     /** @return array<int, array<string,mixed>> */
-
+    // Return all images for a product in gallery order.
     public function forProduct(int $productId): array
     {
         $stmt = $this->pdo->prepare("
@@ -37,6 +38,7 @@ final class ProductImage
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Create a new image row for the given product.
     public function create(int $productId, string $url, ?string $altText, int $sortOrder): int
     {
         $stmt = $this->pdo->prepare("
@@ -54,6 +56,7 @@ final class ProductImage
         return (int)$this->pdo->lastInsertId();
     }
 
+    // Fetch one image that belongs to the given product.
     public function findById(int $id, int $productId): ?array
     {
         $stmt = $this->pdo->prepare("
@@ -72,6 +75,7 @@ final class ProductImage
         return $row ?: null;
     }
 
+    // Update the editable metadata for one image.
     public function updateMeta(int $id, int $productId, ?string $altText, int $sortOrder): void
     {
         $stmt = $this->pdo->prepare("
@@ -89,6 +93,7 @@ final class ProductImage
         ]);
     }
 
+    // Delete one image row for the given product.
     public function delete(int $id, int $productId): void
     {
         $stmt = $this->pdo->prepare("

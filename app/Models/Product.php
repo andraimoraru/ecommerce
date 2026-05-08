@@ -10,6 +10,7 @@ final class Product
 {
     private PDO $pdo;
 
+    // Bootstrap a PDO-backed product model.
     public function __construct()
     {
         $db = new Database();
@@ -21,7 +22,8 @@ final class Product
 
         $this->pdo = $pdo;
     }
-    
+
+    // Return admin-facing products with category, inventory, and thumbnail data.
     public function allAdminWithMeta(): array
     {
         $stmt = $this->pdo->query("
@@ -54,6 +56,7 @@ final class Product
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Return the latest active products for storefront listings.
     public function allActiveForStorefront(int $limit = 12): array
     {
         $stmt = $this->pdo->prepare("
@@ -84,6 +87,7 @@ final class Product
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    // Fetch one active product by slug for the storefront.
     public function findActiveBySlug(string $slug): ?array
     {
         $stmt = $this->pdo->prepare("
@@ -108,6 +112,7 @@ final class Product
         return $row ?: null;
     }
 
+    // Fetch one product by id together with category and inventory data.
     public function findById(int $id): ?array
     {
         $stmt = $this->pdo->prepare("
@@ -128,6 +133,7 @@ final class Product
         return $row ?: null;
     }
 
+    // Check whether a SKU already exists, optionally excluding one product.
     public function skuExists(string $sku, ?int $excludeId = null): bool
     {
         if ($excludeId !== null) {
@@ -154,6 +160,7 @@ final class Product
         return (bool)$stmt->fetchColumn();
     }
 
+    // Check whether a slug already exists, optionally excluding one product.
     public function slugExists(string $slug, ?int $excludeId = null): bool
     {
         if ($excludeId !== null) {
@@ -180,6 +187,7 @@ final class Product
         return (bool)$stmt->fetchColumn();
     }
 
+    // Create a product and its related category/inventory records atomically.
     public function createFull(array $data): int
     {
         $this->pdo->beginTransaction();
@@ -222,6 +230,7 @@ final class Product
         }
     }
 
+    // Update a product and keep category/inventory data in sync.
     public function updateFull(int $id, array $data): void
     {
         $this->pdo->beginTransaction();
@@ -267,6 +276,7 @@ final class Product
         }
     }
 
+    // Change only the lifecycle status for a product.
     public function setStatus(int $id, string $status): void
     {
         $stmt = $this->pdo->prepare("
@@ -281,6 +291,7 @@ final class Product
         ]);
     }
 
+    // Replace the product-to-category link with the current selection.
     private function syncCategory(int $productId, int $categoryId): void
     {
         $stmt = $this->pdo->prepare("DELETE FROM product_categories WHERE product_id = :product_id");
@@ -298,6 +309,7 @@ final class Product
         }
     }
 
+    // Upsert the product's stock row so inventory stays editable in one place.
     private function syncInventory(int $productId, int $stockOnHand): void
     {
         $stmt = $this->pdo->prepare("
@@ -312,6 +324,7 @@ final class Product
         ]);
     }
 
+    // Return active products that belong to a specific category.
     public function allActiveByCategoryId(int $categoryId, int $limit = 48): array
     {
         $stmt = $this->pdo->prepare("
@@ -345,6 +358,7 @@ final class Product
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    // Return all gallery images for a product in display order.
     public function allImagesForProduct(int $productId): array
     {
         $stmt = $this->pdo->prepare("
@@ -359,6 +373,7 @@ final class Product
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    // Fetch the active products needed to hydrate the session cart.
     public function findManyForCart(array $productIds): array
     {
         if (empty($productIds)) {
@@ -370,6 +385,7 @@ final class Product
         $stmt = $this->pdo->prepare("
             SELECT
                 p.id,
+                p.sku,
                 p.name,
                 p.slug,
                 p.price_minor,

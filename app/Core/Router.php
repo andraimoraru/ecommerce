@@ -16,16 +16,19 @@ final class Router
         'POST' => [],
     ];
 
+    // Register a GET route.
     public function get(string $path, string $handler, array $middleware = []): void
     {
         $this->add('GET', $path, $handler, $middleware);
     }
 
+    // Register a POST route.
     public function post(string $path, string $handler, array $middleware = []): void
     {
         $this->add('POST', $path, $handler, $middleware);
     }
 
+    // Store a normalized route definition for later dispatch.
     private function add(string $httpMethod, string $path, string $handler, array $middleware): void
     {
         $path = $this->normalize($path);
@@ -41,6 +44,7 @@ final class Router
         ];
     }
 
+    // Match the request, run middleware, and invoke the controller action.
     public function dispatch(?Request $request = null, ?Response $response = null): void
     {
         $request ??= new Request();
@@ -82,6 +86,7 @@ final class Router
         echo '404 Not Found';
     }
 
+    // Resolve a controller string like `Products@show` and call it.
     private function invokeHandler(string $handler, array $params): void
     {
         if (!str_contains($handler, '@')) {
@@ -113,6 +118,7 @@ final class Router
         }
     }
 
+    // Keep only the named regex captures from a route match.
     private function extractNamedParams(array $matches): array
     {
         $params = [];
@@ -144,6 +150,7 @@ final class Router
         return $path;
     }
 
+    // Ensure paths use the same slash format before matching.
     private function normalize(string $path): string
     {
         $path = '/' . trim($path, '/');

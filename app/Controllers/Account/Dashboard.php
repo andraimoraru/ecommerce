@@ -7,6 +7,7 @@ use App\Core\Controller;
 
 final class Dashboard extends Controller
 {
+    // Render the account dashboard inside the main site layout.
     public function index(): void
     {
         $data = [

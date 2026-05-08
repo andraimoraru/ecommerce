@@ -10,6 +10,7 @@ final class User
 {
     private PDO $pdo;
 
+    // Bootstrap a PDO-backed user model.
     public function __construct()
     {
         $db = new Database();
@@ -20,6 +21,7 @@ final class User
         $this->pdo = $pdo;
     }
 
+    // Fetch one user record by email for login and registration checks.
     public function findByEmail(string $email): ?array
     {
         $stmt = $this->pdo->prepare("
@@ -34,6 +36,7 @@ final class User
         return $row ?: null;
     }
 
+    // Check whether a user already exists for the given email address.
     public function emailExists(string $email): bool
     {
         $stmt = $this->pdo->prepare("SELECT 1 FROM users WHERE email = :email LIMIT 1");
@@ -41,6 +44,7 @@ final class User
         return (bool)$stmt->fetchColumn();
     }
 
+    // Create a new active customer account.
     public function createCustomer(array $data): int
     {
         $stmt = $this->pdo->prepare("

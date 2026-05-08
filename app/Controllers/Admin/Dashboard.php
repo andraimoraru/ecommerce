@@ -7,6 +7,7 @@ use App\Core\Controller;
 
 final class Dashboard extends Controller
 {
+    // Render the admin landing page.
     public function index(): void
     {
         $data = [

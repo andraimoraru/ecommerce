@@ -9,6 +9,7 @@ use App\Core\Response;
 
 final class AuthMiddleware implements Middleware
 {
+    // Require a logged-in user before continuing to the protected route.
     public function handle(Request $request, Response $response): bool
     {
         if (empty($_SESSION['user_id'])) {

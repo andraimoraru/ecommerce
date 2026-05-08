@@ -8,6 +8,7 @@ use App\Models\Product;
 
 final class Products extends Controller
 {
+    // Render the main product listing page.
     public function index(): void
     {
         $products = (new Product())->allActiveForStorefront(48);
@@ -20,6 +21,7 @@ final class Products extends Controller
         $this->render('products/index', $data, 'main');
     }
 
+    // Render a single active product by its slug.
     public function show(array $params): void
     {
         $slug = (string)($params['slug'] ?? '');

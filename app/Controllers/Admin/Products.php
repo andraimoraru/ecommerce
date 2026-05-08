@@ -10,7 +10,8 @@ use App\Models\ProductImage;
 
 final class Products extends Controller
 {
-        public function index(): void
+    // Render the admin product table with inventory and category metadata.
+    public function index(): void
     {
         $products = (new Product())->allAdminWithMeta();
 
@@ -22,6 +23,7 @@ final class Products extends Controller
         $this->render('admin/products/index', $data, 'admin');
     }
 
+    // Render the public product detail page from the admin area.
     public function show(array $params): void
     {
         $slug = (string)($params['slug'] ?? '');
@@ -42,6 +44,7 @@ final class Products extends Controller
         $this->render('products/show', $data, 'main');
     }
 
+    // Render the product creation form.
     public function createForm(): void
     {
         $categories = (new Category())->allActive();
@@ -69,6 +72,7 @@ final class Products extends Controller
         $this->render('admin/products/create', $data, 'admin');
     }
 
+    // Validate and create a product together with any uploaded images.
     public function store(): void
     {
         $old = $this->collectInput();
@@ -109,6 +113,7 @@ final class Products extends Controller
         exit;
     }
 
+    // Render the edit form for an existing product.
     public function editForm(array $params): void
     {
         $id = (int)($params['id'] ?? 0);
@@ -133,6 +138,7 @@ final class Products extends Controller
         ], 'admin');
     }
 
+    // Validate and update changes to an existing product.
     public function update(array $params): void
     {
         $id = (int)($params['id'] ?? 0);
@@ -183,6 +189,7 @@ final class Products extends Controller
         exit;
     }
 
+    // Soft-archive a product by updating its status.
     public function archive(array $params): void
     {
         $id = (int)($params['id'] ?? 0);
@@ -192,6 +199,7 @@ final class Products extends Controller
         exit;
     }
 
+    // Restore an archived product to the active storefront.
     public function restore(array $params): void
     {
         $id = (int)($params['id'] ?? 0);
@@ -201,6 +209,7 @@ final class Products extends Controller
         exit;
     }
 
+    // Gather the editable product fields from the request.
     private function collectInput(): array
     {
         return [
@@ -221,6 +230,7 @@ final class Products extends Controller
         ];
     }
 
+    // Apply the base validation rules for product fields.
     private function validate(array $data): array
     {
         $errors = [];
@@ -252,6 +262,7 @@ final class Products extends Controller
         return $errors;
     }
 
+    // Validate any uploaded product images before saving the product.
     private function validateUploadedImages(): array
     {
         $errors = [];
@@ -296,6 +307,7 @@ final class Products extends Controller
         return $errors;
     }
 
+    // Convert a product name into a URL-friendly slug.
     private function slugify(string $name): string
     {
         $s = mb_strtolower(trim($name));
@@ -304,6 +316,7 @@ final class Products extends Controller
         return $s !== '' ? $s : 'product';
     }
 
+    // Move valid uploads into place and register them in the database.
     private function processUploadedImages(int $productId): void
     {
         if (!isset($_FILES['images'])) {

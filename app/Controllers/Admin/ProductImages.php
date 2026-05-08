@@ -9,6 +9,7 @@ use App\Models\ProductImage;
 
 final class ProductImages extends Controller
 {
+    // Update image metadata for a product gallery entry.
     public function update(array $params): void
     {
         $productId = (int)($params['id'] ?? 0);
@@ -30,6 +31,7 @@ final class ProductImages extends Controller
         exit;
     }
 
+    // Delete an image file and its database record.
     public function delete(array $params): void
     {
         $productId = (int)($params['id'] ?? 0);
@@ -51,6 +53,7 @@ final class ProductImages extends Controller
         exit;
     }
 
+    // Upload a single additional image for an existing product.
     public function upload(array $params): void
     {
         $productId = (int)($params['id'] ?? 0);

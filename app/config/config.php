@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 function env(string $key, $default = null) {
+    // Check the common env sources in the same order the app expects them.
     if (isset($_ENV[$key]) && $_ENV[$key] !== '') {
         return $_ENV[$key];
     }

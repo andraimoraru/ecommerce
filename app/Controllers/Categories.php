@@ -9,6 +9,7 @@ use App\Models\Product;
 
 final class Categories extends Controller
 {
+    // Render the storefront category listing.
     public function index(): void
     {
         $categories = (new Category())->allActiveForStorefront();
@@ -21,7 +22,8 @@ final class Categories extends Controller
         $this->render('categories/index', $data, 'main');
     }
 
-        public function show(array $params): void
+    // Render a category page together with its active products.
+    public function show(array $params): void
     {
         $slug = (string)($params['slug'] ?? '');
 

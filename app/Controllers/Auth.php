@@ -8,6 +8,7 @@ use App\Models\User;
 
 final class Auth extends Controller
 {
+    // Render the registration form.
     public function registerForm(): void
     {
         $this->view('auth/register', [
@@ -17,6 +18,7 @@ final class Auth extends Controller
         ]);
     }
 
+    // Create a customer account and log the user in immediately.
     public function register(): void
     {
         $old = [
@@ -66,6 +68,7 @@ final class Auth extends Controller
         exit;
     }
 
+    // Render the login form.
     public function loginForm(): void
     {
         $this->view('auth/login', [
@@ -75,6 +78,7 @@ final class Auth extends Controller
         ]);
     }
 
+    // Authenticate a user and send them to the right area of the site.
     public function login(): void
     {
         $email = strtolower(trim((string)($_POST['email'] ?? '')));
@@ -120,6 +124,7 @@ final class Auth extends Controller
         exit;
     }
 
+    // Destroy the session and redirect to the storefront.
     public function logout(): void
     {
         $_SESSION = [];
@@ -137,6 +142,7 @@ final class Auth extends Controller
         exit;
     }
 
+    // Apply the basic validation rules for the registration form.
     private function validateRegister(array $old, string $password, string $confirm): array
     {
         $errors = [];

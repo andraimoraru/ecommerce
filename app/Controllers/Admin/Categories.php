@@ -8,6 +8,7 @@ use App\Models\Category;
 
 final class Categories extends Controller
 {
+    // Render the admin category list.
     public function index(): void
     {
         $categories = (new \App\Models\Category())->all();
@@ -20,6 +21,7 @@ final class Categories extends Controller
         $this->render('admin/categories/index', $data, 'admin');
     }
 
+    // Render the category creation form.
     public function createForm(): void
     {
         $parents = (new \App\Models\Category())->allActive();
@@ -33,6 +35,8 @@ final class Categories extends Controller
 
         $this->render('admin/categories/create', $data, 'admin');
     }
+
+    // Validate and persist a new category.
     public function store(): void
     {
         $old = [
@@ -80,6 +84,7 @@ final class Categories extends Controller
         exit;
     }
 
+    // Convert a category name into a simple URL-friendly slug.
     private function slugify(string $name): string
     {
         $s = mb_strtolower(trim($name));

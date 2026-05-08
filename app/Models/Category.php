@@ -10,6 +10,7 @@ final class Category
 {
     private PDO $pdo;
 
+    // Bootstrap a PDO-backed category model.
     public function __construct()
     {
         $db = new Database();
@@ -23,7 +24,7 @@ final class Category
     }
 
     /** @return array<int, array<string,mixed>> */
-
+    // Return every category for the admin area.
     public function all(): array
     {
         $stmt = $this->pdo->query("
@@ -36,7 +37,7 @@ final class Category
     }
 
     /** @return array<int, array<string,mixed>> */
-    
+    // Return only active categories for selection inputs.
     public function allActive(): array
     {
         $stmt = $this->pdo->query("
@@ -51,11 +52,13 @@ final class Category
 
     public function slugExists(string $slug): bool
     {
+        // Use a lightweight existence check rather than loading the full row.
         $stmt = $this->pdo->prepare("SELECT 1 FROM categories WHERE slug = :slug LIMIT 1");
         $stmt->execute(['slug' => $slug]);
         return (bool)$stmt->fetchColumn();
     }
 
+    // Insert a new category row.
     public function create(array $data): int
     {
         $stmt = $this->pdo->prepare("
@@ -72,8 +75,9 @@ final class Category
 
         return (int)$this->pdo->lastInsertId();
     }
-        /** @return array<int, array<string,mixed>> */
 
+    /** @return array<int, array<string,mixed>> */
+    // Return active categories together with storefront product counts.
     public function allActiveForStorefront(): array
     {
         $stmt = $this->pdo->query("
@@ -93,6 +97,7 @@ final class Category
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Fetch one active category by slug for the storefront.
     public function findActiveBySlug(string $slug): ?array
     {
         $stmt = $this->pdo->prepare("
@@ -108,6 +113,7 @@ final class Category
         return $row ?: null;
     }
 
+    // Fetch one category by slug regardless of status.
     public function findBySlug(string $slug): ?array
     {
         $stmt = $this->pdo->prepare("
