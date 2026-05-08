@@ -56,6 +56,10 @@ $router->post('/admin/products/{id}/images/{imageId}/update', 'Admin\\ProductIma
 $router->post('/admin/products/{id}/images/{imageId}/delete', 'Admin\\ProductImages@delete', $adminMw);
 $router->post('/admin/products/{id}/images/upload', 'Admin\\ProductImages@upload', $adminMw);
 
+$router->get('/admin/orders', 'Admin\\Orders@index', $adminMw);
+$router->get('/admin/orders/{id}', 'Admin\\Orders@show', $adminMw);
+$router->post('/admin/orders/{id}/status', 'Admin\\Orders@updateStatus', $adminMw);
+
 $router->get('/cart', 'Cart@index');
 $router->post('/cart/items', 'Cart@add');
 $router->post('/cart/update', 'Cart@update');

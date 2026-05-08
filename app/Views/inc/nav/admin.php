@@ -1,5 +1,6 @@
 <a href="<?= URLROOT ?>/admin/products">Products</a>
 <a href="<?= URLROOT ?>/admin/categories">Categories</a>
+<a href="<?= URLROOT ?>/admin/orders">Orders</a>
 
 
 <form action="<?= URLROOT ?>/logout" method="POST" style="display:inline;">

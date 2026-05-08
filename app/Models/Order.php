@@ -41,6 +41,42 @@ final class Order
         return $prefix . str_pad((string)$sequence, 6, '0', STR_PAD_LEFT);
     }
 
+    /** @return array<int, array<string,mixed>> */
+    // Return the latest orders for the admin listing.
+    public function allAdmin(): array
+    {
+        $stmt = $this->pdo->query("
+            SELECT
+                o.id,
+                o.order_number,
+                o.status,
+                o.currency,
+                o.total_minor,
+                o.customer_email,
+                o.customer_first_name,
+                o.customer_last_name,
+                o.placed_at,
+                o.created_at,
+                COUNT(oi.id) AS item_count
+            FROM orders o
+            LEFT JOIN order_items oi ON oi.order_id = o.id
+            GROUP BY
+                o.id,
+                o.order_number,
+                o.status,
+                o.currency,
+                o.total_minor,
+                o.customer_email,
+                o.customer_first_name,
+                o.customer_last_name,
+                o.placed_at,
+                o.created_at
+            ORDER BY COALESCE(o.placed_at, o.created_at) DESC, o.id DESC
+        ");
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     /**
      * @param array<string,mixed> $orderData
      * @param array<int,array<string,mixed>> $items
@@ -261,6 +297,12 @@ final class Order
         return $row ?: null;
     }
 
+    // Fetch one order summary for the admin detail page.
+    public function findAdminById(int $orderId): ?array
+    {
+        return $this->findSummaryById($orderId);
+    }
+
     /** @return array<int, array<string,mixed>> */
     // Fetch every line item for a given order.
     public function findItemsByOrderId(int $orderId): array
@@ -281,5 +323,48 @@ final class Order
         $stmt->execute(['order_id' => $orderId]);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /** @return array<int, array<string,mixed>> */
+    // Fetch the shipping and billing address snapshots stored against an order.
+    public function findAddressesByOrderId(int $orderId): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                id,
+                type,
+                first_name,
+                last_name,
+                phone,
+                line1,
+                line2,
+                city,
+                region,
+                postcode,
+                country_name
+            FROM order_addresses
+            WHERE order_id = :order_id
+            ORDER BY id ASC
+        ");
+
+        $stmt->execute(['order_id' => $orderId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Update the current status of an order from the admin area.
+    public function updateStatus(int $orderId, string $status): void
+    {
+        $stmt = $this->pdo->prepare("
+            UPDATE orders
+            SET status = :status,
+                updated_at = NOW()
+            WHERE id = :id
+        ");
+
+        $stmt->execute([
+            'id' => $orderId,
+            'status' => $status,
+        ]);
     }
 }
