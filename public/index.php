@@ -58,6 +58,8 @@ $router->post('/admin/products/{id}/images/upload', 'Admin\\ProductImages@upload
 
 $router->get('/admin/orders', 'Admin\\Orders@index', $adminMw);
 $router->get('/admin/orders/{id}', 'Admin\\Orders@show', $adminMw);
+$router->get('/admin/orders/{id}/edit', 'Admin\\Orders@editForm', $adminMw);
+$router->post('/admin/orders/{id}', 'Admin\\Orders@update', $adminMw);
 $router->post('/admin/orders/{id}/status', 'Admin\\Orders@updateStatus', $adminMw);
 
 $router->get('/cart', 'Cart@index');

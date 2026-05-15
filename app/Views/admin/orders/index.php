@@ -38,6 +38,7 @@
                         <td style="padding:10px;"><?= htmlspecialchars((string)($order['placed_at'] ?? $order['created_at'] ?? '—')) ?></td>
                         <td style="padding:10px;">
                             <a class="btn secondary" href="<?= URLROOT ?>/admin/orders/<?= (int)$order['id'] ?>">View</a>
+                            <a class="btn secondary" href="<?= URLROOT ?>/admin/orders/<?= (int)$order['id'] ?>/edit">Edit</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>

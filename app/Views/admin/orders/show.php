@@ -9,6 +9,7 @@
 <?php else: ?>
     <p style="margin:0 0 18px 0;">
         <a href="<?= URLROOT ?>/admin/orders">← Back to orders</a>
+        <a class="btn secondary" href="<?= URLROOT ?>/admin/orders/<?= (int)$order['id'] ?>/edit" style="margin-left:12px;">Edit order</a>
     </p>
 
     <h1 style="margin-top:0;"><?= htmlspecialchars((string)$order['order_number']) ?></h1>
@@ -37,6 +38,7 @@
                     <table style="width:100%; border-collapse:collapse;">
                         <thead>
                             <tr style="background:#f5f5f5;">
+                                <th style="padding:10px; text-align:left;">Image</th>
                                 <th style="padding:10px; text-align:left;">Product</th>
                                 <th style="padding:10px; text-align:left;">SKU</th>
                                 <th style="padding:10px; text-align:left;">Qty</th>
@@ -47,6 +49,19 @@
                         <tbody>
                             <?php foreach ($items as $item): ?>
                                 <tr style="border-bottom:1px solid #ddd;">
+                                    <td style="padding:10px;">
+                                        <?php if (!empty($item['primary_image'])): ?>
+                                            <img
+                                                src="<?= htmlspecialchars((string)$item['primary_image']) ?>"
+                                                alt=""
+                                                style="width:56px;height:56px;object-fit:cover;border-radius:6px;"
+                                            >
+                                        <?php else: ?>
+                                            <div style="width:56px;height:56px;background:#eee;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#999;font-size:12px;">
+                                                No image
+                                            </div>
+                                        <?php endif; ?>
+                                    </td>
                                     <td style="padding:10px;"><?= htmlspecialchars((string)$item['product_name']) ?></td>
                                     <td style="padding:10px;"><?= htmlspecialchars((string)($item['sku'] ?? '—')) ?></td>
                                     <td style="padding:10px;"><?= (int)$item['quantity'] ?></td>
