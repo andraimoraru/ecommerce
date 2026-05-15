@@ -57,7 +57,7 @@ final class Order
                 o.customer_last_name,
                 o.placed_at,
                 o.created_at,
-                COUNT(oi.id) AS item_count
+                COALESCE(SUM(oi.quantity), 0) AS item_count
             FROM orders o
             LEFT JOIN order_items oi ON oi.order_id = o.id
             GROUP BY
@@ -309,15 +309,23 @@ final class Order
     {
         $stmt = $this->pdo->prepare("
             SELECT
-                product_id,
-                sku,
-                product_name,
-                unit_price_minor,
-                quantity,
-                line_total_minor
-            FROM order_items
-            WHERE order_id = :order_id
-            ORDER BY id ASC
+                oi.id,
+                oi.product_id,
+                oi.sku,
+                oi.product_name,
+                oi.unit_price_minor,
+                oi.quantity,
+                oi.line_total_minor,
+                (
+                    SELECT pi.url
+                    FROM product_images pi
+                    WHERE pi.product_id = oi.product_id
+                    ORDER BY pi.sort_order ASC, pi.id ASC
+                    LIMIT 1
+                ) AS primary_image
+            FROM order_items oi
+            WHERE oi.order_id = :order_id
+            ORDER BY oi.id ASC
         ");
 
         $stmt->execute(['order_id' => $orderId]);
@@ -350,6 +358,133 @@ final class Order
         $stmt->execute(['order_id' => $orderId]);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * @param array<string,mixed> $data
+     */
+    // Update one stored address snapshot for an order.
+    public function updateAddress(int $addressId, int $orderId, array $data): void
+    {
+        $stmt = $this->pdo->prepare("
+            UPDATE order_addresses
+            SET
+                first_name = :first_name,
+                last_name = :last_name,
+                phone = :phone,
+                line1 = :line1,
+                line2 = :line2,
+                city = :city,
+                region = :region,
+                postcode = :postcode,
+                country_name = :country_name
+            WHERE id = :id
+              AND order_id = :order_id
+        ");
+
+        $stmt->execute([
+            'id' => $addressId,
+            'order_id' => $orderId,
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'phone' => $data['phone'] !== '' ? $data['phone'] : null,
+            'line1' => $data['line1'],
+            'line2' => $data['line2'] !== '' ? $data['line2'] : null,
+            'city' => $data['city'],
+            'region' => $data['region'] !== '' ? $data['region'] : null,
+            'postcode' => $data['postcode'],
+            'country_name' => $data['country_name'],
+        ]);
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $items
+     */
+    // Replace all line items for an order with a recalculated set.
+    public function replaceItems(int $orderId, array $items): void
+    {
+        $delete = $this->pdo->prepare("DELETE FROM order_items WHERE order_id = :order_id");
+        $delete->execute(['order_id' => $orderId]);
+
+        $insert = $this->pdo->prepare("
+            INSERT INTO order_items (
+                order_id,
+                product_id,
+                sku,
+                product_name,
+                unit_price_minor,
+                quantity,
+                line_total_minor,
+                created_at
+            ) VALUES (
+                :order_id,
+                :product_id,
+                :sku,
+                :product_name,
+                :unit_price_minor,
+                :quantity,
+                :line_total_minor,
+                NOW()
+            )
+        ");
+
+        foreach ($items as $item) {
+            $insert->execute([
+                'order_id' => $orderId,
+                'product_id' => $item['product_id'],
+                'sku' => $item['sku'],
+                'product_name' => $item['product_name'],
+                'unit_price_minor' => $item['unit_price_minor'],
+                'quantity' => $item['quantity'],
+                'line_total_minor' => $item['line_total_minor'],
+            ]);
+        }
+    }
+
+    /**
+     * @param array<string,mixed> $totals
+     */
+    // Update the stored monetary totals after item recalculation.
+    public function updateTotals(int $orderId, array $totals): void
+    {
+        $stmt = $this->pdo->prepare("
+            UPDATE orders
+            SET
+                subtotal_minor = :subtotal_minor,
+                discount_minor = :discount_minor,
+                total_minor = :total_minor,
+                updated_at = NOW()
+            WHERE id = :id
+        ");
+
+        $stmt->execute([
+            'id' => $orderId,
+            'subtotal_minor' => (int)$totals['subtotal_minor'],
+            'discount_minor' => (int)$totals['discount_minor'],
+            'total_minor' => (int)$totals['total_minor'],
+        ]);
+    }
+
+    /**
+     * @param array<string,mixed> $totals
+     * @param array<string,mixed> $shipping
+     * @param array<int,array<string,mixed>> $items
+     */
+    // Persist shipping, line items, and recalculated totals in one transaction.
+    public function updateEditableParts(int $orderId, array $totals, array $shipping, array $items): void
+    {
+        $this->pdo->beginTransaction();
+
+        try {
+            $this->replaceItems($orderId, $items);
+            $this->updateTotals($orderId, $totals);
+            $this->updateAddress((int)$shipping['id'], $orderId, $shipping);
+
+            $this->pdo->commit();
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
+            throw $e;
+        }
     }
 
     // Update the current status of an order from the admin area.

@@ -133,6 +133,32 @@ final class Product
         return $row ?: null;
     }
 
+    // Return lightweight product data for admin order editing.
+    public function allSellableForOrderEditor(): array
+    {
+        $stmt = $this->pdo->query("
+            SELECT
+                p.id,
+                p.sku,
+                p.name,
+                p.price_minor,
+                p.currency,
+                p.status,
+                (
+                    SELECT pi.url
+                    FROM product_images pi
+                    WHERE pi.product_id = p.id
+                    ORDER BY pi.sort_order ASC, pi.id ASC
+                    LIMIT 1
+                ) AS primary_image
+            FROM products p
+            WHERE p.status IN ('ACTIVE', 'DRAFT')
+            ORDER BY p.name ASC
+        ");
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // Check whether a SKU already exists, optionally excluding one product.
     public function skuExists(string $sku, ?int $excludeId = null): bool
     {
