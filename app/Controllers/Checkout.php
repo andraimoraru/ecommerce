@@ -7,6 +7,8 @@ use App\Core\Controller;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Address;
+use App\Services\StripeGateway;
+use RuntimeException;
 
 final class Checkout extends Controller
 {
@@ -78,12 +80,7 @@ final class Checkout extends Controller
                 $old['billing_country'] = (string)($billing['country_name'] ?? '');
             }
         }
-        $this->render('checkout/index', [
-            'title' => 'Checkout',
-            'cart' => $cart,
-            'errors' => [],
-            'old' => $old,
-        ], 'main');
+        $this->renderCheckout($cart, [], $old);
 
     }
 
@@ -102,12 +99,7 @@ final class Checkout extends Controller
         $errors = $this->validateCheckoutInput($old);
 
         if ($errors) {
-            $this->render('checkout/index', [
-                'title' => 'Checkout',
-                'cart' => $cart,
-                'errors' => $errors,
-                'old' => $old,
-            ], 'main');
+            $this->renderCheckout($cart, $errors, $old);
             return;
         }
 
@@ -165,64 +157,106 @@ final class Checkout extends Controller
         }, $items);
 
         $orderModel = new Order();
+        $orderData = [
+            'order_number' => $orderModel->nextOrderNumber(),
+            'user_id' => $_SESSION['user_id'] ?? null,
+            'status' => 'PENDING_PAYMENT',
+            'currency' => 'GBP',
+            'subtotal_minor' => $subtotalMinor,
+            'shipping_minor' => 0,
+            'tax_minor' => 0,
+            'discount_minor' => 0,
+            'total_minor' => $subtotalMinor,
+            'customer_email' => $old['shipping_email'],
+            'customer_first_name' => $old['shipping_first_name'],
+            'customer_last_name' => $old['shipping_last_name'],
+            'customer_phone' => $old['shipping_phone'] ?: null,
+        ];
 
-        $orderId = $orderModel->createFull(
-            [
-                'order_number' => $orderModel->nextOrderNumber(),
-                'user_id' => $_SESSION['user_id'] ?? null,
-                'status' => 'PENDING_PAYMENT',
-                'currency' => 'GBP',
-                'subtotal_minor' => $subtotalMinor,
-                'shipping_minor' => 0,
-                'tax_minor' => 0,
-                'discount_minor' => 0,
-                'total_minor' => $subtotalMinor,
-                'customer_email' => $old['shipping_email'],
-                'customer_first_name' => $old['shipping_first_name'],
-                'customer_last_name' => $old['shipping_last_name'],
-                'customer_phone' => $old['shipping_phone'] ?: null,
-            ],
-            $mappedItems,
-            $shipping,
-            $billing
-        );
+        $orderId = $orderModel->createFull($orderData, $mappedItems, $shipping, $billing);
+        $stripe = new StripeGateway();
 
-        $cartModel->clear();
-
-        if (!empty($_SESSION['user_id']) && !empty($old['save_address'])) {
-            $addressModel = new Address();
-
-            $addressId = $addressModel->create([
-                'first_name' => $shipping['first_name'],
-                'last_name' => $shipping['last_name'],
-                'email' => $old['shipping_email'],
-                'phone' => $shipping['phone'],
-                'line1' => $shipping['line1'],
-                'line2' => $shipping['line2'],
-                'city' => $shipping['city'],
-                'region' => $shipping['region'],
-                'postcode' => $shipping['postcode'],
-                'country_name' => $shipping['country_name'],
-            ]);
-
-            $addressModel->linkToUser(
-                (int)$_SESSION['user_id'],
-                $addressId,
-                'Checkout address',
-                true,
-                $billingSame
+        try {
+            $checkoutSession = $stripe->createCheckoutSession(
+                array_merge($orderData, ['id' => $orderId]),
+                $mappedItems,
+                URLROOT . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
+                URLROOT . '/checkout/cancel?order_id=' . $orderId,
+                $old['shipping_email']
             );
+        } catch (RuntimeException $exception) {
+            $orderModel->updateStatus($orderId, 'CANCELLED');
+            $errors['payment'] = $exception->getMessage();
+            $this->renderCheckout($cart, $errors, $old);
+            return;
+        }
+
+        $checkoutUrl = (string)($checkoutSession['url'] ?? '');
+        if ($checkoutUrl === '') {
+            $orderModel->updateStatus($orderId, 'CANCELLED');
+            $errors['payment'] = 'Stripe did not return a checkout URL.';
+            $this->renderCheckout($cart, $errors, $old);
+            return;
         }
 
         $_SESSION['last_order_id'] = $orderId;
-        header('Location: ' . URLROOT . '/checkout/success');
+        $_SESSION['pending_checkout_save_address'] = [
+            'enabled' => !empty($_SESSION['user_id']) && !empty($old['save_address']),
+            'billing_same_as_shipping' => $billingSame,
+            'shipping_email' => $old['shipping_email'],
+            'shipping' => $shipping,
+        ];
+
+        header('Location: ' . $checkoutUrl);
         exit;
     }
 
-    // Show the most recently placed order once, then clear the session pointer.
+    // Confirm the Stripe session result before showing the order summary.
     public function success(): void
     {
-        $orderId = (int)($_SESSION['last_order_id'] ?? 0);
+        $sessionId = trim((string)($_GET['session_id'] ?? ''));
+        $orderId = 0;
+
+        if ($sessionId !== '') {
+            try {
+                $session = (new StripeGateway())->retrieveCheckoutSession($sessionId);
+            } catch (RuntimeException $exception) {
+                http_response_code(400);
+                echo $exception->getMessage();
+                return;
+            }
+
+            $orderId = (int)($session['metadata']['order_id'] ?? $session['client_reference_id'] ?? 0);
+            $paymentStatus = (string)($session['payment_status'] ?? '');
+            $amountTotal = (int)($session['amount_total'] ?? 0);
+            $currency = strtoupper((string)($session['currency'] ?? ''));
+
+            $orderModel = new Order();
+            $order = $orderModel->findSummaryById($orderId);
+            if (!$order) {
+                http_response_code(404);
+                echo 'Order not found';
+                return;
+            }
+
+            if ($paymentStatus !== 'paid') {
+                header('Location: ' . URLROOT . '/checkout/cancel?order_id=' . $orderId);
+                exit;
+            }
+
+            if ($amountTotal !== (int)$order['total_minor'] || $currency !== strtoupper((string)$order['currency'])) {
+                http_response_code(422);
+                echo 'Stripe payment total does not match the order.';
+                return;
+            }
+
+            $orderModel->updateStatus($orderId, 'PAID');
+            $this->saveCheckoutAddressIfRequested();
+            $cartModel = new Cart();
+            $cartModel->clear();
+        } else {
+            $orderId = (int)($_SESSION['last_order_id'] ?? 0);
+        }
 
         if ($orderId <= 0) {
             header('Location: ' . URLROOT . '/products');
@@ -233,12 +267,26 @@ final class Checkout extends Controller
         $order = $orderModel->findSummaryById($orderId);
         $items = $orderModel->findItemsByOrderId($orderId);
 
+        unset($_SESSION['pending_checkout_save_address']);
         unset($_SESSION['last_order_id']);
 
         $this->render('checkout/success', [
             'title' => 'Order placed',
             'order' => $order,
             'items' => $items,
+        ], 'main');
+    }
+
+    // Show a simple return screen when Stripe Checkout is cancelled.
+    public function cancel(): void
+    {
+        $orderId = (int)($_GET['order_id'] ?? 0);
+        if ($orderId > 0) {
+            (new Order())->updateStatus($orderId, 'CANCELLED');
+        }
+
+        $this->render('checkout/cancel', [
+            'title' => 'Payment cancelled',
         ], 'main');
     }
 
@@ -328,5 +376,58 @@ final class Checkout extends Controller
         }
 
         return $errors;
+    }
+
+    /**
+     * @param array<string,mixed> $cart
+     * @param array<string,string> $errors
+     * @param array<string,string> $old
+     */
+    // Render the checkout form with a consistent view payload.
+    private function renderCheckout(array $cart, array $errors, array $old): void
+    {
+        $this->render('checkout/index', [
+            'title' => 'Checkout',
+            'cart' => $cart,
+            'errors' => $errors,
+            'old' => $old,
+            'stripe_configured' => (new StripeGateway())->isConfigured(),
+        ], 'main');
+    }
+
+    // Persist the optional saved address only after a confirmed payment.
+    private function saveCheckoutAddressIfRequested(): void
+    {
+        $state = $_SESSION['pending_checkout_save_address'] ?? null;
+        if (!is_array($state) || empty($state['enabled']) || empty($_SESSION['user_id'])) {
+            return;
+        }
+
+        $shipping = $state['shipping'] ?? null;
+        if (!is_array($shipping)) {
+            return;
+        }
+
+        $addressModel = new Address();
+        $addressId = $addressModel->create([
+            'first_name' => $shipping['first_name'] ?? '',
+            'last_name' => $shipping['last_name'] ?? '',
+            'email' => $state['shipping_email'] ?? '',
+            'phone' => $shipping['phone'] ?? null,
+            'line1' => $shipping['line1'] ?? '',
+            'line2' => $shipping['line2'] ?? null,
+            'city' => $shipping['city'] ?? '',
+            'region' => $shipping['region'] ?? null,
+            'postcode' => $shipping['postcode'] ?? '',
+            'country_name' => $shipping['country_name'] ?? '',
+        ]);
+
+        $addressModel->linkToUser(
+            (int)$_SESSION['user_id'],
+            $addressId,
+            'Checkout address',
+            true,
+            !empty($state['billing_same_as_shipping'])
+        );
     }
 }
