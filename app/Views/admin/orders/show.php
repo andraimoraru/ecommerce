@@ -3,6 +3,11 @@
 <?php $shipping = $data['shipping_address'] ?? null; ?>
 <?php $billing = $data['billing_address'] ?? null; ?>
 <?php $allowedStatuses = $data['allowed_statuses'] ?? []; ?>
+<?php $shipment = $data['shipment'] ?? null; ?>
+<?php $shippingDefaults = $data['shipping_defaults'] ?? []; ?>
+<?php $shippingSuccess = $data['shipping_success'] ?? ''; ?>
+<?php $shippingErrors = $data['shipping_errors'] ?? []; ?>
+<?php $shippingOld = $data['shipping_old'] ?? []; ?>
 
 <?php if (!$order): ?>
     <p>Order not found.</p>
@@ -107,6 +112,73 @@
                 <p><strong>Discount:</strong> -<?= htmlspecialchars((string)$order['currency']) ?> <?= number_format(((int)$order['discount_minor']) / 100, 2) ?></p>
                 <hr>
                 <p style="font-size:18px;"><strong>Total:</strong> <?= htmlspecialchars((string)$order['currency']) ?> <?= number_format(((int)$order['total_minor']) / 100, 2) ?></p>
+            </div>
+
+            <div class="card">
+                <h2 style="margin-top:0;">Royal Mail Label</h2>
+
+                <?php if ($shippingSuccess !== ''): ?>
+                    <p style="color:green;"><?= htmlspecialchars((string)$shippingSuccess) ?></p>
+                <?php endif; ?>
+
+                <?php if (!empty($shippingErrors['shipping'])): ?>
+                    <p style="color:red;"><?= htmlspecialchars((string)$shippingErrors['shipping']) ?></p>
+                <?php endif; ?>
+
+                <?php if (!empty($shipment)): ?>
+                    <p><strong>Status:</strong> <?= htmlspecialchars((string)($shipment['status'] ?? '—')) ?></p>
+                    <p><strong>Service:</strong> <?= htmlspecialchars((string)($shipment['service_code'] ?? '—')) ?></p>
+                    <?php if (!empty($shipment['royal_mail_shipment_id'])): ?>
+                        <p><strong>Click & Drop Ref:</strong> <?= htmlspecialchars((string)$shipment['royal_mail_shipment_id']) ?></p>
+                    <?php endif; ?>
+                    <?php if (!empty($shipment['tracking_number'])): ?>
+                        <p><strong>Tracking:</strong> <?= htmlspecialchars((string)$shipment['tracking_number']) ?></p>
+                    <?php endif; ?>
+                    <hr>
+                <?php endif; ?>
+
+                <?php if (empty($shippingDefaults['configured'])): ?>
+                    <p>Royal Mail Click & Drop is not configured yet. Add `ROYAL_MAIL_CLICK_DROP_API_KEY` to your `.env` file first.</p>
+                <?php else: ?>
+                    <form method="post" action="<?= URLROOT ?>/admin/orders/<?= (int)$order['id'] ?>/shipping-label">
+                        <div style="margin-bottom:12px;">
+                            <label for="service_code">Service Code</label><br>
+                            <input
+                                id="service_code"
+                                name="service_code"
+                                value="<?= htmlspecialchars((string)($shippingOld['service_code'] ?? $shipment['service_code'] ?? $shippingDefaults['service_code'] ?? '')) ?>"
+                                style="width:100%;"
+                            >
+                            <?php if (!empty($shippingErrors['service_code'])): ?><p style="color:red;"><?= htmlspecialchars((string)$shippingErrors['service_code']) ?></p><?php endif; ?>
+                        </div>
+
+                        <div style="margin-bottom:12px;">
+                            <label for="package_format_identifier">Package Format</label><br>
+                            <input
+                                id="package_format_identifier"
+                                name="package_format_identifier"
+                                value="<?= htmlspecialchars((string)($shippingOld['package_format_identifier'] ?? $shipment['package_format_identifier'] ?? $shippingDefaults['package_format_identifier'] ?? 'Parcel')) ?>"
+                                style="width:100%;"
+                            >
+                        </div>
+
+                        <div style="margin-bottom:12px;">
+                            <label for="weight_grams">Weight (grams)</label><br>
+                            <input
+                                id="weight_grams"
+                                type="number"
+                                min="1"
+                                name="weight_grams"
+                                value="<?= htmlspecialchars((string)($shippingOld['weight_grams'] ?? $shipment['weight_grams'] ?? $shippingDefaults['weight_grams'] ?? 1000)) ?>"
+                                style="width:100%;"
+                            >
+                            <?php if (!empty($shippingErrors['weight_grams'])): ?><p style="color:red;"><?= htmlspecialchars((string)$shippingErrors['weight_grams']) ?></p><?php endif; ?>
+                        </div>
+
+                        <p style="color:#666;">This version creates the shipment in Click & Drop only. The label is managed in your Royal Mail account.</p>
+                        <button class="btn" type="submit"><?= !empty($shipment) ? 'Recreate Shipment' : 'Create Shipment' ?></button>
+                    </form>
+                <?php endif; ?>
             </div>
 
             <div class="card">

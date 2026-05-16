@@ -61,6 +61,7 @@ $router->get('/admin/orders/{id}', 'Admin\\Orders@show', $adminMw);
 $router->get('/admin/orders/{id}/edit', 'Admin\\Orders@editForm', $adminMw);
 $router->post('/admin/orders/{id}', 'Admin\\Orders@update', $adminMw);
 $router->post('/admin/orders/{id}/status', 'Admin\\Orders@updateStatus', $adminMw);
+$router->post('/admin/orders/{id}/shipping-label', 'Admin\\Orders@createShippingLabel', $adminMw);
 
 $router->get('/cart', 'Cart@index');
 $router->post('/cart/items', 'Cart@add');

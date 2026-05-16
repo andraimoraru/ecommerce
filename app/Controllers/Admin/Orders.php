@@ -5,7 +5,10 @@ namespace App\Controllers\Admin;
 
 use App\Core\Controller;
 use App\Models\Order;
+use App\Models\OrderShipment;
 use App\Models\Product;
+use App\Services\RoyalMailClickDropService;
+use RuntimeException;
 
 final class Orders extends Controller
 {
@@ -50,8 +53,20 @@ final class Orders extends Controller
             'items' => $items,
             'shipping_address' => $shippingAddress,
             'billing_address' => $billingAddress,
+            'shipment' => (new OrderShipment())->findByOrderId($id),
             'allowed_statuses' => self::ALLOWED_STATUSES,
+            'shipping_defaults' => [
+                'service_code' => (string)env('ROYAL_MAIL_DEFAULT_SERVICE_CODE', ''),
+                'package_format_identifier' => (string)env('ROYAL_MAIL_DEFAULT_PACKAGE_FORMAT', 'Parcel'),
+                'weight_grams' => (int)env('ROYAL_MAIL_DEFAULT_WEIGHT_GRAMS', 1000),
+                'configured' => (new RoyalMailClickDropService())->isConfigured(),
+            ],
+            'shipping_success' => (string)($_SESSION['admin_shipping_success'] ?? ''),
+            'shipping_errors' => $_SESSION['admin_shipping_errors'] ?? [],
+            'shipping_old' => $_SESSION['admin_shipping_old'] ?? [],
         ], 'admin');
+
+        unset($_SESSION['admin_shipping_success'], $_SESSION['admin_shipping_errors'], $_SESSION['admin_shipping_old']);
     }
 
     // Render the editable order form.
@@ -143,6 +158,49 @@ final class Orders extends Controller
         }
 
         $orderModel->updateStatus($id, $status);
+
+        header('Location: ' . URLROOT . '/admin/orders/' . $id);
+        exit;
+    }
+
+    // Create a Royal Mail Click & Drop label for a paid order.
+    public function createShippingLabel(array $params): void
+    {
+        $id = (int)($params['id'] ?? 0);
+        $orderModel = new Order();
+        [$order, $shippingAddress, $billingAddress, $items] = $this->loadOrderContext($orderModel, $id);
+
+        if (!$order || !$shippingAddress || !$billingAddress || $items === []) {
+            http_response_code(404);
+            echo 'Order not found';
+            return;
+        }
+
+        $form = [
+            'service_code' => strtoupper(trim((string)($_POST['service_code'] ?? ''))),
+            'package_format_identifier' => trim((string)($_POST['package_format_identifier'] ?? 'Parcel')),
+            'weight_grams' => (int)($_POST['weight_grams'] ?? 0),
+        ];
+
+        $errors = $this->validateShippingLabelInput($order, $shippingAddress, $form);
+        if ($errors) {
+            $_SESSION['admin_shipping_errors'] = $errors;
+            $_SESSION['admin_shipping_old'] = $form;
+            header('Location: ' . URLROOT . '/admin/orders/' . $id);
+            exit;
+        }
+
+        try {
+            $response = (new RoyalMailClickDropService())->createOrders(
+                $this->buildRoyalMailOrderPayload($order, $shippingAddress, $billingAddress, $items, $form)
+            );
+            $shipment = $this->extractShipmentResponse($response, $id, $form);
+            (new OrderShipment())->upsertForOrder($id, $shipment);
+            $_SESSION['admin_shipping_success'] = 'Royal Mail shipment created successfully in Click & Drop.';
+        } catch (RuntimeException $exception) {
+            $_SESSION['admin_shipping_errors'] = ['shipping' => $exception->getMessage()];
+            $_SESSION['admin_shipping_old'] = $form;
+        }
 
         header('Location: ' . URLROOT . '/admin/orders/' . $id);
         exit;
@@ -339,5 +397,133 @@ final class Orders extends Controller
         }
 
         return round(($discountMinor / $subtotalMinor) * 100, 2);
+    }
+
+    /**
+     * @param array<string,mixed> $order
+     * @param array<string,mixed> $shipping
+     * @param array<string,string|int> $form
+     * @return array<string,string>
+     */
+    // Validate the extra inputs required to create a shipping label.
+    private function validateShippingLabelInput(array $order, array $shipping, array $form): array
+    {
+        $errors = [];
+
+        if (($order['status'] ?? '') !== 'PAID') {
+            $errors['shipping'] = 'Only paid orders can have a Royal Mail label created.';
+        }
+
+        if ($form['service_code'] === '') {
+            $errors['service_code'] = 'Service code is required.';
+        }
+
+        if ((int)$form['weight_grams'] <= 0) {
+            $errors['weight_grams'] = 'Weight must be greater than 0 grams.';
+        }
+
+        $countryCode = $this->mapCountryCode((string)($shipping['country_name'] ?? ''));
+        if ($countryCode !== 'GB') {
+            $errors['shipping'] = 'This first Royal Mail integration only supports UK destination labels.';
+        }
+
+        return $errors;
+    }
+
+    /**
+     * @param array<string,mixed> $order
+     * @param array<string,mixed> $shipping
+     * @param array<string,mixed> $billing
+     * @param array<int,array<string,mixed>> $items
+     * @param array<string,string|int> $form
+     * @return array<string,mixed>
+     */
+    // Build the Click & Drop order payload for one domestic shipment.
+    private function buildRoyalMailOrderPayload(array $order, array $shipping, array $billing, array $items, array $form): array
+    {
+        return [
+            'items' => [[
+                'orderReference' => (string)$order['order_number'],
+                'orderDate' => gmdate('c'),
+                'recipient' => [
+                    'address' => [
+                        'fullName' => trim((string)$shipping['first_name'] . ' ' . (string)$shipping['last_name']),
+                        'companyName' => '',
+                        'addressLine1' => (string)$shipping['line1'],
+                        'addressLine2' => (string)($shipping['line2'] ?? ''),
+                        'addressLine3' => '',
+                        'city' => (string)$shipping['city'],
+                        'county' => (string)($shipping['region'] ?? ''),
+                        'postcode' => (string)$shipping['postcode'],
+                        'countryCode' => $this->mapCountryCode((string)$shipping['country_name']),
+                    ],
+                    'emailAddress' => (string)$order['customer_email'],
+                    'phoneNumber' => (string)($shipping['phone'] ?? $order['customer_phone'] ?? ''),
+                ],
+                'billing' => [
+                    'address' => [
+                        'fullName' => trim((string)$billing['first_name'] . ' ' . (string)$billing['last_name']),
+                        'companyName' => '',
+                        'addressLine1' => (string)$billing['line1'],
+                        'addressLine2' => (string)($billing['line2'] ?? ''),
+                        'addressLine3' => '',
+                        'city' => (string)$billing['city'],
+                        'county' => (string)($billing['region'] ?? ''),
+                        'postcode' => (string)$billing['postcode'],
+                        'countryCode' => $this->mapCountryCode((string)$billing['country_name']),
+                    ],
+                    'emailAddress' => (string)$order['customer_email'],
+                    'phoneNumber' => (string)($billing['phone'] ?? $order['customer_phone'] ?? ''),
+                ],
+                'packages' => [[
+                    'packageFormatIdentifier' => (string)$form['package_format_identifier'],
+                    'weightInGrams' => (int)$form['weight_grams'],
+                ]],
+                'postageDetails' => [
+                    'serviceCode' => (string)$form['service_code'],
+                ],
+                'shippingCostCharged' => ((int)$order['shipping_minor']) / 100,
+                'subtotal' => ((int)$order['subtotal_minor']) / 100,
+                'total' => ((int)$order['total_minor']) / 100,
+                'currencyCode' => (string)$order['currency'],
+            ]],
+        ];
+    }
+
+    /**
+     * @param array<string,mixed> $response
+     * @param array<string,string|int> $form
+     * @return array<string,mixed>
+     */
+    // Shape the stored shipment record from the Royal Mail API response.
+    private function extractShipmentResponse(array $response, int $orderId, array $form): array
+    {
+        $createdOrder = $response['createdOrders'][0] ?? null;
+        if (!is_array($createdOrder)) {
+            throw new RuntimeException('Royal Mail did not return a created order.');
+        }
+
+        return [
+            'provider' => 'ROYAL_MAIL',
+            'royal_mail_shipment_id' => (string)($createdOrder['orderIdentifier'] ?? $createdOrder['orderReference'] ?? ''),
+            'tracking_number' => (string)($createdOrder['trackingNumber'] ?? ''),
+            'service_code' => (string)$form['service_code'],
+            'shipping_cost_minor' => (int)($orderId > 0 ? 0 : 0),
+            'currency' => 'GBP',
+            'label_url' => null,
+            'created_by_user_id' => isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null,
+            'status' => 'LABEL_CREATED',
+        ];
+    }
+
+    // Map stored country names onto the ISO country codes Click & Drop expects.
+    private function mapCountryCode(string $countryName): string
+    {
+        $normalized = strtoupper(trim($countryName));
+
+        return match ($normalized) {
+            'GB', 'UK', 'UNITED KINGDOM', 'GREAT BRITAIN', 'ENGLAND', 'SCOTLAND', 'WALES', 'NORTHERN IRELAND' => 'GB',
+            default => strlen($normalized) >= 2 ? substr($normalized, 0, 2) : 'GB',
+        };
     }
 }
