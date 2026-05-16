@@ -5,6 +5,7 @@
 <?php $totalMinor = (int)($cart['total_minor'] ?? 0); ?>
 <?php $old = $data['old'] ?? []; ?>
 <?php $errors = $data['errors'] ?? []; ?>
+<?php $stripeConfigured = !empty($data['stripe_configured']); ?>
 
 <?php if (!$items): ?>
     <p>Your cart is empty.</p>
@@ -218,6 +219,14 @@
             <div class="cart-card">
                 <h2>Summary</h2>
 
+                <?php if (!empty($errors['payment'])): ?>
+                    <p style="color:red;"><?= htmlspecialchars($errors['payment']) ?></p>
+                <?php endif; ?>
+
+                <?php if (!$stripeConfigured): ?>
+                    <p style="color:#9a6700;">Stripe is not configured yet. Add your Stripe keys to the `.env` file before taking payments.</p>
+                <?php endif; ?>
+
                 <p>
                     Subtotal:
                     <strong>GBP <?= number_format($totalMinor / 100, 2) ?></strong>
@@ -225,7 +234,7 @@
 
                 <p>
                     Shipping:
-                    <strong>To be calculated</strong>
+                    <strong>GBP 0.00</strong>
                 </p>
 
                 <hr>
@@ -235,7 +244,7 @@
                     <strong>GBP <?= number_format($totalMinor / 100, 2) ?></strong>
                 </p>
 
-                <button class="add-cart-btn" type="submit">Place Order</button>
+                <button class="add-cart-btn" type="submit">Continue to secure payment</button>
             </div>
         </div>
 

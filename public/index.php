@@ -70,5 +70,6 @@ $router->post('/cart/remove', 'Cart@remove');
 $router->get('/checkout', 'Checkout@index');
 $router->post('/checkout', 'Checkout@store');
 $router->get('/checkout/success', 'Checkout@success');
-
+$router->get('/checkout/cancel', 'Checkout@cancel');
+$router->post('/payments/stripe/webhook', 'Webhooks@stripe');
 $router->dispatch();

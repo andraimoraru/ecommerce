@@ -16,7 +16,7 @@
                 <h2>Thank you for your order</h2>
 
                 <p>
-                    Your order has been created successfully.
+                    Your payment was successful and your order has been confirmed.
                 </p>
 
                 <p>

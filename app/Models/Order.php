@@ -5,6 +5,7 @@ namespace App\Models;
 
 use App\Core\Database;
 use PDO;
+use PDOException;
 use Throwable;
 
 final class Order
@@ -30,13 +31,20 @@ final class Order
         $prefix = date('Y') . '-';
 
         $stmt = $this->pdo->prepare("
-            SELECT COUNT(*) + 1
+            SELECT order_number
             FROM orders
             WHERE order_number LIKE :prefix
+            ORDER BY order_number DESC
+            LIMIT 1
         ");
         $stmt->execute(['prefix' => $prefix . '%']);
 
-        $sequence = (int)$stmt->fetchColumn();
+        $latestOrderNumber = (string)($stmt->fetchColumn() ?: '');
+        $sequence = 1;
+
+        if ($latestOrderNumber !== '' && str_starts_with($latestOrderNumber, $prefix)) {
+            $sequence = ((int)substr($latestOrderNumber, strlen($prefix))) + 1;
+        }
 
         return $prefix . str_pad((string)$sequence, 6, '0', STR_PAD_LEFT);
     }
@@ -57,7 +65,7 @@ final class Order
                 o.customer_last_name,
                 o.placed_at,
                 o.created_at,
-                COALESCE(SUM(oi.quantity), 0) AS item_count
+                COUNT(oi.id) AS item_count
             FROM orders o
             LEFT JOIN order_items oi ON oi.order_id = o.id
             GROUP BY
@@ -86,132 +94,154 @@ final class Order
     // Create the order, addresses, and line items inside one transaction.
     public function createFull(array $orderData, array $items, array $shipping, array $billing): int
     {
-        $this->pdo->beginTransaction();
+        for ($attempt = 0; $attempt < 3; $attempt++) {
+            $this->pdo->beginTransaction();
 
-        try {
-            // 1) create order
-            $stmt = $this->pdo->prepare("
-                INSERT INTO orders (
-                    order_number,
-                    user_id,
-                    status,
-                    currency,
-                    subtotal_minor,
-                    shipping_minor,
-                    tax_minor,
-                    discount_minor,
-                    total_minor,
-                    placed_at,
-                    shipping_address_id,
-                    billing_address_id,
-                    customer_email,
-                    customer_first_name,
-                    customer_last_name,
-                    customer_phone,
-                    created_at,
-                    updated_at
-                ) VALUES (
-                    :order_number,
-                    :user_id,
-                    :status,
-                    :currency,
-                    :subtotal_minor,
-                    :shipping_minor,
-                    :tax_minor,
-                    :discount_minor,
-                    :total_minor,
-                    NOW(),
-                    NULL,
-                    NULL,
-                    :customer_email,
-                    :customer_first_name,
-                    :customer_last_name,
-                    :customer_phone,
-                    NOW(),
-                    NOW()
-                )
-            ");
+            try {
+                // 1) create order
+                $stmt = $this->pdo->prepare("
+                    INSERT INTO orders (
+                        order_number,
+                        user_id,
+                        status,
+                        currency,
+                        subtotal_minor,
+                        shipping_minor,
+                        tax_minor,
+                        discount_minor,
+                        total_minor,
+                        placed_at,
+                        shipping_address_id,
+                        billing_address_id,
+                        customer_email,
+                        customer_first_name,
+                        customer_last_name,
+                        customer_phone,
+                        created_at,
+                        updated_at
+                    ) VALUES (
+                        :order_number,
+                        :user_id,
+                        :status,
+                        :currency,
+                        :subtotal_minor,
+                        :shipping_minor,
+                        :tax_minor,
+                        :discount_minor,
+                        :total_minor,
+                        NOW(),
+                        NULL,
+                        NULL,
+                        :customer_email,
+                        :customer_first_name,
+                        :customer_last_name,
+                        :customer_phone,
+                        NOW(),
+                        NOW()
+                    )
+                ");
 
-            $stmt->execute([
-                'order_number' => $orderData['order_number'],
-                'user_id' => $orderData['user_id'],
-                'status' => $orderData['status'],
-                'currency' => $orderData['currency'],
-                'subtotal_minor' => $orderData['subtotal_minor'],
-                'shipping_minor' => $orderData['shipping_minor'],
-                'tax_minor' => $orderData['tax_minor'],
-                'discount_minor' => $orderData['discount_minor'],
-                'total_minor' => $orderData['total_minor'],
-                'customer_email' => $orderData['customer_email'],
-                'customer_first_name' => $orderData['customer_first_name'],
-                'customer_last_name' => $orderData['customer_last_name'],
-                'customer_phone' => $orderData['customer_phone'],
-            ]);
-
-            $orderId = (int)$this->pdo->lastInsertId();
-
-            // 2) shipping address
-            $shippingAddressId = $this->insertOrderAddress($orderId, 'SHIPPING', $shipping);
-
-            // 3) billing address
-            $billingAddressId = $this->insertOrderAddress($orderId, 'BILLING', $billing);
-
-            // 4) update order with address ids
-            $stmt = $this->pdo->prepare("
-                UPDATE orders
-                SET shipping_address_id = :shipping_address_id,
-                    billing_address_id = :billing_address_id,
-                    updated_at = NOW()
-                WHERE id = :id
-            ");
-
-            $stmt->execute([
-                'id' => $orderId,
-                'shipping_address_id' => $shippingAddressId,
-                'billing_address_id' => $billingAddressId,
-            ]);
-
-            // 5) order items
-            $stmt = $this->pdo->prepare("
-                INSERT INTO order_items (
-                    order_id,
-                    product_id,
-                    sku,
-                    product_name,
-                    unit_price_minor,
-                    quantity,
-                    line_total_minor,
-                    created_at
-                ) VALUES (
-                    :order_id,
-                    :product_id,
-                    :sku,
-                    :product_name,
-                    :unit_price_minor,
-                    :quantity,
-                    :line_total_minor,
-                    NOW()
-                )
-            ");
-
-            foreach ($items as $item) {
                 $stmt->execute([
-                    'order_id' => $orderId,
-                    'product_id' => $item['product_id'],
-                    'sku' => $item['sku'],
-                    'product_name' => $item['product_name'],
-                    'unit_price_minor' => $item['unit_price_minor'],
-                    'quantity' => $item['quantity'],
-                    'line_total_minor' => $item['line_total_minor'],
+                    'order_number' => $orderData['order_number'],
+                    'user_id' => $orderData['user_id'],
+                    'status' => $orderData['status'],
+                    'currency' => $orderData['currency'],
+                    'subtotal_minor' => $orderData['subtotal_minor'],
+                    'shipping_minor' => $orderData['shipping_minor'],
+                    'tax_minor' => $orderData['tax_minor'],
+                    'discount_minor' => $orderData['discount_minor'],
+                    'total_minor' => $orderData['total_minor'],
+                    'customer_email' => $orderData['customer_email'],
+                    'customer_first_name' => $orderData['customer_first_name'],
+                    'customer_last_name' => $orderData['customer_last_name'],
+                    'customer_phone' => $orderData['customer_phone'],
                 ]);
-            }
 
-            $this->pdo->commit();
-            return $orderId;
-        } catch (Throwable $e) {
-            $this->pdo->rollBack();
-            throw $e;
+                $orderId = (int)$this->pdo->lastInsertId();
+
+                // 2) shipping address
+                $shippingAddressId = $this->insertOrderAddress($orderId, 'SHIPPING', $shipping);
+
+                // 3) billing address
+                $billingAddressId = $this->insertOrderAddress($orderId, 'BILLING', $billing);
+
+                // 4) update order with address ids
+                $stmt = $this->pdo->prepare("
+                    UPDATE orders
+                    SET shipping_address_id = :shipping_address_id,
+                        billing_address_id = :billing_address_id,
+                        updated_at = NOW()
+                    WHERE id = :id
+                ");
+
+                $stmt->execute([
+                    'id' => $orderId,
+                    'shipping_address_id' => $shippingAddressId,
+                    'billing_address_id' => $billingAddressId,
+                ]);
+
+                // 5) order items
+                $stmt = $this->pdo->prepare("
+                    INSERT INTO order_items (
+                        order_id,
+                        product_id,
+                        sku,
+                        product_name,
+                        unit_price_minor,
+                        quantity,
+                        line_total_minor,
+                        created_at
+                    ) VALUES (
+                        :order_id,
+                        :product_id,
+                        :sku,
+                        :product_name,
+                        :unit_price_minor,
+                        :quantity,
+                        :line_total_minor,
+                        NOW()
+                    )
+                ");
+
+                foreach ($items as $item) {
+                    $stmt->execute([
+                        'order_id' => $orderId,
+                        'product_id' => $item['product_id'],
+                        'sku' => $item['sku'],
+                        'product_name' => $item['product_name'],
+                        'unit_price_minor' => $item['unit_price_minor'],
+                        'quantity' => $item['quantity'],
+                        'line_total_minor' => $item['line_total_minor'],
+                    ]);
+                }
+
+                $this->pdo->commit();
+                return $orderId;
+            } catch (PDOException $exception) {
+                $this->pdo->rollBack();
+
+                if ($this->isDuplicateOrderNumberError($exception) && $attempt < 2) {
+                    $orderData['order_number'] = $this->nextOrderNumber();
+                    continue;
+                }
+
+                throw $exception;
+            } catch (Throwable $e) {
+                $this->pdo->rollBack();
+                throw $e;
+            }
         }
+
+        throw new \RuntimeException('Unable to create a unique order number.');
+    }
+
+    // Detect duplicate-key errors caused by colliding order numbers.
+    private function isDuplicateOrderNumberError(PDOException $exception): bool
+    {
+        $message = $exception->getMessage();
+
+        return $exception->getCode() === '23000'
+            && str_contains($message, 'uq_orders_order_number');
     }
 
     /**
