@@ -24,3 +24,6 @@ define('DB_NAME', env('DB_NAME', ''));
 define('APPROOT', dirname(__DIR__));
 define('URLROOT', rtrim(env('APP_URL', 'http://localhost:8000'), '/'));
 define('SITENAME', env('SITE_NAME', 'Modular E-commerce'));
+define('STRIPE_SECRET_KEY', env('STRIPE_SECRET_KEY', ''));
+define('STRIPE_WEBHOOK_SECRET', env('STRIPE_WEBHOOK_SECRET', ''));
+define('ROYAL_MAIL_CLICK_DROP_API_KEY', env('ROYAL_MAIL_CLICK_DROP_API_KEY', ''));
