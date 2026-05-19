@@ -170,4 +170,47 @@ final class Address
 
         return $row ?: null;
     }
+
+        /** @return array<int, array<string,mixed>> */
+    public function allForUser(int $userId): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                ua.label,
+                ua.is_default_shipping,
+                ua.is_default_billing,
+                ua.created_at AS linked_at,
+                a.id,
+                a.first_name,
+                a.last_name,
+                a.email,
+                a.phone,
+                a.line1,
+                a.line2,
+                a.city,
+                a.region,
+                a.postcode,
+                a.country_name
+            FROM user_addresses ua
+            INNER JOIN addresses a ON a.id = ua.address_id
+            WHERE ua.user_id = :user_id
+            ORDER BY ua.is_default_shipping DESC, ua.is_default_billing DESC, ua.created_at DESC
+        ");
+
+        $stmt->execute(['user_id' => $userId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function countForUser(int $userId): int
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT COUNT(*)
+            FROM user_addresses
+            WHERE user_id = :user_id
+        ");
+        $stmt->execute(['user_id' => $userId]);
+
+        return (int)$stmt->fetchColumn();
+    }
 }
