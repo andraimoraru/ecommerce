@@ -62,4 +62,158 @@ final class User
 
         return (int)$this->pdo->lastInsertId();
     }
+
+    /** @return array<int,array<string,mixed>> */
+    // Return customer accounts with order counts for the admin list.
+    public function allCustomersAdmin(): array
+    {
+        $stmt = $this->pdo->query("
+            SELECT
+                u.id,
+                u.email,
+                u.first_name,
+                u.last_name,
+                u.phone,
+                u.role,
+                u.is_active,
+                u.created_at,
+                u.updated_at,
+                COUNT(o.id) AS order_count
+            FROM users u
+            LEFT JOIN orders o ON o.user_id = u.id
+            WHERE u.role = 'CUSTOMER'
+            GROUP BY
+                u.id,
+                u.email,
+                u.first_name,
+                u.last_name,
+                u.phone,
+                u.role,
+                u.is_active,
+                u.created_at,
+                u.updated_at
+            ORDER BY u.created_at DESC, u.id DESC
+        ");
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Fetch one customer account for admin management.
+    public function findCustomerById(int $id): ?array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                id,
+                email,
+                first_name,
+                last_name,
+                phone,
+                role,
+                is_active,
+                created_at,
+                updated_at
+            FROM users
+            WHERE id = :id
+              AND role = 'CUSTOMER'
+            LIMIT 1
+        ");
+        $stmt->execute(['id' => $id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
+    }
+
+    /** @return array<int,array<string,mixed>> */
+    // Fetch a customer's orders for the admin detail screen.
+    public function ordersForCustomer(int $userId): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                id,
+                order_number,
+                status,
+                currency,
+                total_minor,
+                placed_at,
+                created_at
+            FROM orders
+            WHERE user_id = :user_id
+            ORDER BY COALESCE(placed_at, created_at) DESC, id DESC
+        ");
+        $stmt->execute(['user_id' => $userId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Check whether a customer already has at least one order.
+    public function customerHasOrders(int $userId): bool
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT 1
+            FROM orders
+            WHERE user_id = :user_id
+            LIMIT 1
+        ");
+        $stmt->execute(['user_id' => $userId]);
+
+        return (bool)$stmt->fetchColumn();
+    }
+
+    // Persist editable customer fields from the admin area.
+    public function updateCustomer(int $id, array $data): void
+    {
+        $stmt = $this->pdo->prepare("
+            UPDATE users
+            SET
+                email = :email,
+                first_name = :first_name,
+                last_name = :last_name,
+                phone = :phone,
+                is_active = :is_active,
+                updated_at = NOW()
+            WHERE id = :id
+              AND role = 'CUSTOMER'
+        ");
+
+        $stmt->execute([
+            'id' => $id,
+            'email' => $data['email'],
+            'first_name' => $data['first_name'],
+            'last_name' => $data['last_name'],
+            'phone' => $data['phone'] !== '' ? $data['phone'] : null,
+            'is_active' => (int)$data['is_active'],
+        ]);
+    }
+
+    // Check whether an email belongs to another user.
+    public function emailExistsForAnotherUser(string $email, int $excludeId): bool
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT 1
+            FROM users
+            WHERE email = :email
+              AND id != :id
+            LIMIT 1
+        ");
+        $stmt->execute([
+            'email' => $email,
+            'id' => $excludeId,
+        ]);
+
+        return (bool)$stmt->fetchColumn();
+    }
+
+    // Remove a customer account that has no order history.
+    public function deleteCustomer(int $id): void
+    {
+        $deleteLinks = $this->pdo->prepare("DELETE FROM user_addresses WHERE user_id = :user_id");
+        $deleteLinks->execute(['user_id' => $id]);
+
+        $stmt = $this->pdo->prepare("
+            DELETE FROM users
+            WHERE id = :id
+              AND role = 'CUSTOMER'
+        ");
+        $stmt->execute(['id' => $id]);
+    }
 }

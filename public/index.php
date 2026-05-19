@@ -63,6 +63,12 @@ $router->post('/admin/orders/{id}', 'Admin\\Orders@update', $adminMw);
 $router->post('/admin/orders/{id}/status', 'Admin\\Orders@updateStatus', $adminMw);
 $router->post('/admin/orders/{id}/shipping-label', 'Admin\\Orders@createShippingLabel', $adminMw);
 
+$router->get('/admin/customers', 'Admin\\Customers@index', $adminMw);
+$router->get('/admin/customers/{id}', 'Admin\\Customers@show', $adminMw);
+$router->get('/admin/customers/{id}/edit', 'Admin\\Customers@editForm', $adminMw);
+$router->post('/admin/customers/{id}', 'Admin\\Customers@update', $adminMw);
+$router->post('/admin/customers/{id}/delete', 'Admin\\Customers@delete', $adminMw);
+
 $router->get('/cart', 'Cart@index');
 $router->post('/cart/items', 'Cart@add');
 $router->post('/cart/update', 'Cart@update');
