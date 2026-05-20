@@ -1,6 +1,9 @@
 <h1><?= htmlspecialchars($data['title'] ?? 'Orders') ?></h1>
 
 <?php $orders = $data['orders'] ?? []; ?>
+<?php $pagination = $data['pagination'] ?? ['page' => 1, 'total_pages' => 1]; ?>
+<?php $currentPage = (int)($pagination['page'] ?? 1); ?>
+<?php $totalPages = (int)($pagination['total_pages'] ?? 1); ?>
 
 <?php if (count($orders) === 0): ?>
     <p>No orders have been placed yet.</p>
@@ -45,4 +48,16 @@
             </tbody>
         </table>
     </div>
+
+    <?php if ($totalPages > 1): ?>
+        <div style="display:flex; gap:10px; align-items:center; margin-top:16px;">
+            <?php if ($currentPage > 1): ?>
+                <a class="btn secondary" href="<?= URLROOT ?>/admin/orders?page=<?= $currentPage - 1 ?>">Previous</a>
+            <?php endif; ?>
+            <span>Page <?= $currentPage ?> of <?= $totalPages ?></span>
+            <?php if ($currentPage < $totalPages): ?>
+                <a class="btn secondary" href="<?= URLROOT ?>/admin/orders?page=<?= $currentPage + 1 ?>">Next</a>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 <?php endif; ?>

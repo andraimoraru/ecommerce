@@ -5,9 +5,13 @@
 </div>
 
 <?php $products = $data['products'] ?? []; ?>
+<?php $pagination = $data['pagination'] ?? ['page' => 1, 'total_pages' => 1]; ?>
+<?php $currentPage = (int)($pagination['page'] ?? 1); ?>
+<?php $totalPages = (int)($pagination['total_pages'] ?? 1); ?>
+<?php $filterCategory = $data['filter_category'] ?? null; ?>
 
 <?php if (count($products) === 0): ?>
-    <p>No products yet. Create your first one.</p>
+    <p>No products found for this view.</p>
 <?php else: ?>
     <div class="card">
         <table style="width:100%; border-collapse:collapse;">
@@ -67,4 +71,16 @@
             </tbody>
         </table>
     </div>
+
+    <?php if ($totalPages > 1): ?>
+        <div style="display:flex; gap:10px; align-items:center; margin-top:16px;">
+            <?php if ($currentPage > 1): ?>
+                <a class="btn secondary" href="<?= URLROOT ?>/admin/products?page=<?= $currentPage - 1 ?><?= $filterCategory ? '&category_id=' . (int)$filterCategory['id'] : '' ?>">Previous</a>
+            <?php endif; ?>
+            <span>Page <?= $currentPage ?> of <?= $totalPages ?></span>
+            <?php if ($currentPage < $totalPages): ?>
+                <a class="btn secondary" href="<?= URLROOT ?>/admin/products?page=<?= $currentPage + 1 ?><?= $filterCategory ? '&category_id=' . (int)$filterCategory['id'] : '' ?>">Next</a>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 <?php endif; ?>

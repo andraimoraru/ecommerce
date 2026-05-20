@@ -24,9 +24,9 @@ final class Product
     }
 
     // Return admin-facing products with category, inventory, and thumbnail data.
-    public function allAdminWithMeta(): array
+    public function allAdminWithMeta(?int $categoryId = null, int $limit = 25, int $offset = 0): array
     {
-        $stmt = $this->pdo->query("
+        $sql = "
             SELECT
                 p.id,
                 p.sku,
@@ -36,6 +36,7 @@ final class Product
                 p.currency,
                 p.status,
                 p.created_at,
+                c.id AS category_id,
                 c.name AS category_name,
                 i.stock_on_hand,
                 i.stock_reserved,
@@ -50,10 +51,51 @@ final class Product
             LEFT JOIN product_categories pc ON pc.product_id = p.id
             LEFT JOIN categories c ON c.id = pc.category_id
             LEFT JOIN inventory i ON i.product_id = p.id
-            ORDER BY p.created_at DESC
-        ");
+        ";
+
+        if ($categoryId !== null && $categoryId > 0) {
+            $sql .= " WHERE c.id = :category_id";
+        }
+
+        $sql .= " ORDER BY p.created_at DESC LIMIT :lim OFFSET :off";
+
+        $stmt = $this->pdo->prepare($sql);
+
+        if ($categoryId !== null && $categoryId > 0) {
+            $stmt->bindValue(':category_id', $categoryId, PDO::PARAM_INT);
+        }
+
+        $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':off', $offset, PDO::PARAM_INT);
+
+        $stmt->execute();
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Count admin-visible products, optionally within one category.
+    public function countAdmin(?int $categoryId = null): int
+    {
+        $sql = "
+            SELECT COUNT(DISTINCT p.id)
+            FROM products p
+            LEFT JOIN product_categories pc ON pc.product_id = p.id
+            LEFT JOIN categories c ON c.id = pc.category_id
+        ";
+
+        if ($categoryId !== null && $categoryId > 0) {
+            $sql .= " WHERE c.id = :category_id";
+        }
+
+        $stmt = $this->pdo->prepare($sql);
+
+        if ($categoryId !== null && $categoryId > 0) {
+            $stmt->bindValue(':category_id', $categoryId, PDO::PARAM_INT);
+        }
+
+        $stmt->execute();
+
+        return (int)$stmt->fetchColumn();
     }
 
     // Return the latest active products for storefront listings.

@@ -65,9 +65,9 @@ final class User
 
     /** @return array<int,array<string,mixed>> */
     // Return customer accounts with order counts for the admin list.
-    public function allCustomersAdmin(): array
+    public function allCustomersAdmin(int $limit = 25, int $offset = 0): array
     {
-        $stmt = $this->pdo->query("
+        $stmt = $this->pdo->prepare("
             SELECT
                 u.id,
                 u.email,
@@ -93,9 +93,26 @@ final class User
                 u.created_at,
                 u.updated_at
             ORDER BY u.created_at DESC, u.id DESC
+            LIMIT :lim OFFSET :off
         ");
 
+        $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':off', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Count customer accounts for admin pagination.
+    public function countCustomersAdmin(): int
+    {
+        $stmt = $this->pdo->query("
+            SELECT COUNT(*)
+            FROM users
+            WHERE role = 'CUSTOMER'
+        ");
+
+        return (int)$stmt->fetchColumn();
     }
 
     // Fetch one customer account for admin management.
