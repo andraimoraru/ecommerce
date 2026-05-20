@@ -12,9 +12,20 @@ final class Customers extends Controller
     // Render the admin customer list.
     public function index(): void
     {
+        $perPage = 25;
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $offset = ($page - 1) * $perPage;
+        $userModel = new User();
+
         $this->render('admin/customers/index', [
             'title' => 'Customers',
-            'customers' => (new User())->allCustomersAdmin(),
+            'customers' => $userModel->allCustomersAdmin($perPage, $offset),
+            'pagination' => [
+                'page' => $page,
+                'per_page' => $perPage,
+                'total_items' => $userModel->countCustomersAdmin(),
+                'total_pages' => max(1, (int)ceil($userModel->countCustomersAdmin() / $perPage)),
+            ],
         ], 'admin');
     }
 

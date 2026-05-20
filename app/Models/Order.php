@@ -51,9 +51,9 @@ final class Order
 
     /** @return array<int, array<string,mixed>> */
     // Return the latest orders for the admin listing.
-    public function allAdmin(): array
+    public function allAdmin(int $limit = 25, int $offset = 0): array
     {
-        $stmt = $this->pdo->query("
+        $stmt = $this->pdo->prepare("
             SELECT
                 o.id,
                 o.order_number,
@@ -65,7 +65,7 @@ final class Order
                 o.customer_last_name,
                 o.placed_at,
                 o.created_at,
-                COUNT(oi.id) AS item_count
+                COALESCE(SUM(oi.quantity), 0) AS item_count
             FROM orders o
             LEFT JOIN order_items oi ON oi.order_id = o.id
             GROUP BY
@@ -80,9 +80,22 @@ final class Order
                 o.placed_at,
                 o.created_at
             ORDER BY COALESCE(o.placed_at, o.created_at) DESC, o.id DESC
+            LIMIT :lim OFFSET :off
         ");
 
+        $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':off', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Count all orders for admin pagination.
+    public function countAdmin(): int
+    {
+        $stmt = $this->pdo->query("SELECT COUNT(*) FROM orders");
+
+        return (int)$stmt->fetchColumn();
     }
 
     /**

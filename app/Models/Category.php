@@ -28,7 +28,7 @@ final class Category
     public function all(): array
     {
         $stmt = $this->pdo->query("
-            SELECT id, name, slug, parent_id, is_active, created_at
+            SELECT id, name, slug, parent_id, is_active, created_at, updated_at
             FROM categories
             ORDER BY name ASC
         ");
@@ -58,6 +58,24 @@ final class Category
         return (bool)$stmt->fetchColumn();
     }
 
+    // Check whether a slug exists on another category.
+    public function slugExistsForAnotherCategory(string $slug, int $excludeId): bool
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT 1
+            FROM categories
+            WHERE slug = :slug
+              AND id != :id
+            LIMIT 1
+        ");
+        $stmt->execute([
+            'slug' => $slug,
+            'id' => $excludeId,
+        ]);
+
+        return (bool)$stmt->fetchColumn();
+    }
+
     // Insert a new category row.
     public function create(array $data): int
     {
@@ -74,6 +92,122 @@ final class Category
         ]);
 
         return (int)$this->pdo->lastInsertId();
+    }
+
+    // Fetch one category by id for admin editing.
+    public function findById(int $id): ?array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT id, name, slug, parent_id, is_active, created_at, updated_at
+            FROM categories
+            WHERE id = :id
+            LIMIT 1
+        ");
+        $stmt->execute(['id' => $id]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row ?: null;
+    }
+
+    // Persist editable category fields.
+    public function update(int $id, array $data): void
+    {
+        $stmt = $this->pdo->prepare("
+            UPDATE categories
+            SET
+                name = :name,
+                slug = :slug,
+                parent_id = :parent_id,
+                is_active = :is_active,
+                updated_at = NOW()
+            WHERE id = :id
+        ");
+
+        $stmt->execute([
+            'id' => $id,
+            'name' => $data['name'],
+            'slug' => $data['slug'],
+            'parent_id' => $data['parent_id'] ?: null,
+            'is_active' => (int)$data['is_active'],
+        ]);
+    }
+
+    // Check whether this category has child categories.
+    public function hasChildren(int $id): bool
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT 1
+            FROM categories
+            WHERE parent_id = :id
+            LIMIT 1
+        ");
+        $stmt->execute(['id' => $id]);
+
+        return (bool)$stmt->fetchColumn();
+    }
+
+    // Check whether this category has assigned products.
+    public function hasProducts(int $id): bool
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT 1
+            FROM product_categories
+            WHERE category_id = :id
+            LIMIT 1
+        ");
+        $stmt->execute(['id' => $id]);
+
+        return (bool)$stmt->fetchColumn();
+    }
+
+    // Delete one category and re-parent any direct children to its parent.
+    public function delete(int $id): void
+    {
+        $category = $this->findById($id);
+
+        if (!$category) {
+            throw new \RuntimeException('Category not found.');
+        }
+
+        $newParentId = $category['parent_id'] ? (int)$category['parent_id'] : null;
+
+        if ($newParentId === $id) {
+            $newParentId = null;
+        }
+
+        $this->pdo->beginTransaction();
+
+        try {
+            $reparentChildren = $this->pdo->prepare("
+                UPDATE categories
+                SET parent_id = :new_parent_id
+                WHERE parent_id = :id
+            ");
+            $reparentChildren->bindValue(':id', $id, PDO::PARAM_INT);
+
+            if ($newParentId === null) {
+                $reparentChildren->bindValue(':new_parent_id', null, PDO::PARAM_NULL);
+            } else {
+                $reparentChildren->bindValue(':new_parent_id', $newParentId, PDO::PARAM_INT);
+            }
+
+            $reparentChildren->execute();
+
+            $detachSelf = $this->pdo->prepare("
+                UPDATE categories
+                SET parent_id = NULL
+                WHERE id = :id
+            ");
+            $detachSelf->execute(['id' => $id]);
+
+            $stmt = $this->pdo->prepare("DELETE FROM categories WHERE id = :id");
+            $stmt->execute(['id' => $id]);
+
+            $this->pdo->commit();
+        } catch (\Throwable $exception) {
+            $this->pdo->rollBack();
+            throw $exception;
+        }
     }
 
     /** @return array<int, array<string,mixed>> */

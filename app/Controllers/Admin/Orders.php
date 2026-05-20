@@ -26,11 +26,22 @@ final class Orders extends Controller
     // Render the admin orders list.
     public function index(): void
     {
-        $orders = (new Order())->allAdmin();
+        $perPage = 25;
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $offset = ($page - 1) * $perPage;
+        $orderModel = new Order();
+        $orders = $orderModel->allAdmin($perPage, $offset);
+        $totalItems = $orderModel->countAdmin();
 
         $this->render('admin/orders/index', [
             'title' => 'Orders',
             'orders' => $orders,
+            'pagination' => [
+                'page' => $page,
+                'per_page' => $perPage,
+                'total_items' => $totalItems,
+                'total_pages' => max(1, (int)ceil($totalItems / $perPage)),
+            ],
         ], 'admin');
     }
 

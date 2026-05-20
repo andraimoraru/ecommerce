@@ -13,11 +13,26 @@ final class Products extends Controller
     // Render the admin product table with inventory and category metadata.
     public function index(): void
     {
-        $products = (new Product())->allAdminWithMeta();
+        $perPage = 25;
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $offset = ($page - 1) * $perPage;
+        $categoryId = (int)($_GET['category_id'] ?? 0);
+        $productModel = new Product();
+        $category = $categoryId > 0 ? (new Category())->findById($categoryId) : null;
+        $filterCategoryId = $categoryId > 0 ? $categoryId : null;
+        $products = $productModel->allAdminWithMeta($filterCategoryId, $perPage, $offset);
+        $totalItems = $productModel->countAdmin($filterCategoryId);
 
         $data = [
-            'title' => 'Products',
+            'title' => $category ? ('Products in ' . $category['name']) : 'Products',
             'products' => $products,
+            'filter_category' => $category,
+            'pagination' => [
+                'page' => $page,
+                'per_page' => $perPage,
+                'total_items' => $totalItems,
+                'total_pages' => max(1, (int)ceil($totalItems / $perPage)),
+            ],
         ];
 
         $this->render('admin/products/index', $data, 'admin');
