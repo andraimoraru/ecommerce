@@ -11,10 +11,10 @@
 
     <div class="cart-sidebar">
         <div class="cart-card">
-            <a class="add-cart-btn" href="<?= URLROOT ?>/checkout" style="display:block;text-align:center;text-decoration:none;">
+            <a class="add-cart-btn button-link button-link--block" href="<?= URLROOT ?>/checkout">
                 Return to checkout
             </a>
-            <p style="margin-top:12px;">
+            <p class="stack-sm">
                 <a href="<?= URLROOT ?>/cart">Back to cart</a>
             </p>
         </div>

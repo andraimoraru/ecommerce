@@ -16,60 +16,60 @@
                 <h2>Core</h2>
 
                 <label>Name</label><br>
-                <input name="name" value="<?= htmlspecialchars((string)$p['name']) ?>" style="width:100%;">
-                <?php if (!empty($errors['name'])): ?><p style="color:red;"><?= htmlspecialchars($errors['name']) ?></p><?php endif; ?>
+                <input name="name" value="<?= htmlspecialchars((string)$p['name']) ?>">
+                <?php if (!empty($errors['name'])): ?><p class="text-danger"><?= htmlspecialchars($errors['name']) ?></p><?php endif; ?>
 
                 <br><br>
 
                 <label>SKU</label><br>
-                <input name="sku" value="<?= htmlspecialchars((string)$p['sku']) ?>" style="width:100%;">
-                <?php if (!empty($errors['sku'])): ?><p style="color:red;"><?= htmlspecialchars($errors['sku']) ?></p><?php endif; ?>
+                <input name="sku" value="<?= htmlspecialchars((string)$p['sku']) ?>">
+                <?php if (!empty($errors['sku'])): ?><p class="text-danger"><?= htmlspecialchars($errors['sku']) ?></p><?php endif; ?>
 
                 <br><br>
 
                 <label>Slug</label><br>
-                <input name="slug" value="<?= htmlspecialchars((string)$p['slug']) ?>" style="width:100%;">
-                <?php if (!empty($errors['slug'])): ?><p style="color:red;"><?= htmlspecialchars($errors['slug']) ?></p><?php endif; ?>
+                <input name="slug" value="<?= htmlspecialchars((string)$p['slug']) ?>">
+                <?php if (!empty($errors['slug'])): ?><p class="text-danger"><?= htmlspecialchars($errors['slug']) ?></p><?php endif; ?>
 
                 <br><br>
 
                 <label>Description</label><br>
-                <textarea name="description" rows="4" style="width:100%;"><?= htmlspecialchars((string)($p['description'] ?? '')) ?></textarea>
+                <textarea name="description" rows="4"><?= htmlspecialchars((string)($p['description'] ?? '')) ?></textarea>
 
                 <br><br>
 
                 <label>Description HTML</label><br>
-                <textarea name="description_html" rows="8" style="width:100%;"><?= htmlspecialchars((string)($p['description_html'] ?? '')) ?></textarea>
+                <textarea name="description_html" rows="8"><?= htmlspecialchars((string)($p['description_html'] ?? '')) ?></textarea>
             </div>
 
             <div class="card">
                 <h2>SEO</h2>
 
                 <label>Meta title</label><br>
-                <input name="meta_title" value="<?= htmlspecialchars((string)($p['meta_title'] ?? '')) ?>" style="width:100%;">
+                <input name="meta_title" value="<?= htmlspecialchars((string)($p['meta_title'] ?? '')) ?>">
 
                 <br><br>
 
                 <label>Meta description</label><br>
-                <textarea name="meta_description" rows="4" style="width:100%;"><?= htmlspecialchars((string)($p['meta_description'] ?? '')) ?></textarea>
+                <textarea name="meta_description" rows="4"><?= htmlspecialchars((string)($p['meta_description'] ?? '')) ?></textarea>
             </div>
 
             <div class="card">
                 <h2>Pricing & Status</h2>
 
                 <label>Price (minor units)</label><br>
-                <input type="number" name="price_minor" min="1" value="<?= htmlspecialchars((string)$p['price_minor']) ?>" style="width:100%;">
-                <?php if (!empty($errors['price_minor'])): ?><p style="color:red;"><?= htmlspecialchars($errors['price_minor']) ?></p><?php endif; ?>
+                <input type="number" name="price_minor" min="1" value="<?= htmlspecialchars((string)$p['price_minor']) ?>">
+                <?php if (!empty($errors['price_minor'])): ?><p class="text-danger"><?= htmlspecialchars($errors['price_minor']) ?></p><?php endif; ?>
 
                 <br><br>
 
                 <label>Currency</label><br>
-                <input name="currency" value="<?= htmlspecialchars((string)$p['currency']) ?>" maxlength="3" style="width:100%;">
+                <input name="currency" value="<?= htmlspecialchars((string)$p['currency']) ?>" maxlength="3">
 
                 <br><br>
 
                 <label>Status</label><br>
-                <select name="status" style="width:100%;">
+                <select name="status">
                     <?php foreach (['DRAFT','ACTIVE','ARCHIVED'] as $status): ?>
                         <option value="<?= $status ?>" <?= (($p['status'] ?? '') === $status) ? 'selected' : '' ?>>
                             <?= $status ?>
@@ -82,7 +82,7 @@
                 <h2>Category & Inventory</h2>
 
                 <label>Category</label><br>
-                <select name="category_id" style="width:100%;">
+                <select name="category_id">
                     <option value="">-- None --</option>
                     <?php foreach (($data['categories'] ?? []) as $c): ?>
                         <option value="<?= (int)$c['id'] ?>" <?= ((int)($p['category_id'] ?? 0) === (int)$c['id']) ? 'selected' : '' ?>>
@@ -94,7 +94,7 @@
                 <br><br>
 
                 <label>Stock on hand</label><br>
-                <input type="number" name="stock_on_hand" min="0" value="<?= htmlspecialchars((string)($p['stock_on_hand'] ?? 0)) ?>" style="width:100%;">
+                <input type="number" name="stock_on_hand" min="0" value="<?= htmlspecialchars((string)($p['stock_on_hand'] ?? 0)) ?>">
             </div>
 
             <div class="card">
@@ -117,22 +117,22 @@
                 <p>No images yet.</p>
             <?php else: ?>
                 <?php foreach ($images as $img): ?>
-                    <div style="border:1px solid #ddd; padding:12px; border-radius:8px; margin-bottom:12px;">
-                        <div style="display:flex; gap:16px; align-items:flex-start; flex-wrap:wrap;">
+                    <div class="admin-image-panel">
+                        <div class="admin-image-panel__row">
 
                             <div>
                                 <img src="<?= htmlspecialchars((string)$img['url']) ?>"
                                      alt="<?= htmlspecialchars((string)($img['alt_text'] ?? '')) ?>"
-                                     style="width:100px;height:100px;object-fit:cover;border-radius:6px;border:1px solid #ddd;">
+                                     class="admin-thumb admin-thumb--large">
                             </div>
 
-                            <div style="flex:1; min-width:260px;">
+                            <div class="admin-image-panel__body">
                                 <form method="post" action="<?= URLROOT ?>/admin/products/<?= (int)$p['id'] ?>/images/<?= (int)$img['id'] ?>/update">
                                     <label>Alt text</label><br>
-                                    <input name="alt_text" value="<?= htmlspecialchars((string)($img['alt_text'] ?? '')) ?>" style="width:100%;"><br><br>
+                                    <input name="alt_text" value="<?= htmlspecialchars((string)($img['alt_text'] ?? '')) ?>"><br><br>
 
                                     <label>Sort order</label><br>
-                                    <input type="number" name="sort_order" value="<?= (int)$img['sort_order'] ?>" style="width:120px;"><br><br>
+                                    <input type="number" name="sort_order" value="<?= (int)$img['sort_order'] ?>" class="admin-qty-input"><br><br>
 
                                     <button class="btn secondary" type="submit">Update Image</button>
                                 </form>
@@ -141,7 +141,7 @@
                             <div>
                                 <form method="post"
                                       action="<?= URLROOT ?>/admin/products/<?= (int)$p['id'] ?>/images/<?= (int)$img['id'] ?>/delete"
-                                      onsubmit="return confirm('Delete this image?');">
+                                      data-confirm="Delete this image?">
                                     <button class="btn" type="submit">Delete</button>
                                 </form>
                             </div>
@@ -149,7 +149,7 @@
                         </div>
 
                         <?php if ((int)$img['sort_order'] === 0): ?>
-                            <p style="margin-top:8px; color:#666;"><small>Primary image (lowest sort order)</small></p>
+                            <p class="admin-meta-note"><small>Primary image (lowest sort order)</small></p>
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
@@ -167,10 +167,10 @@
                 <input type="file" name="image" accept=".jpg,.jpeg,.png,.webp" required><br><br>
 
                 <label>Alt text</label><br>
-                <input type="text" name="alt_text" style="width:100%;"><br><br>
+                <input type="text" name="alt_text"><br><br>
 
                 <label>Sort order</label><br>
-                <input type="number" name="sort_order" value="0" style="width:120px;"><br><br>
+                <input type="number" name="sort_order" value="0" class="admin-qty-input"><br><br>
 
                 <button class="btn" type="submit">Upload Image</button>
             </form>

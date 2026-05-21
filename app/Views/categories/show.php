@@ -19,7 +19,7 @@
         <?php foreach ($products as $product): ?>
             <div class="product-card">
 
-                <a href="<?= URLROOT ?>/products/<?= htmlspecialchars((string)$product['slug']) ?>" style="text-decoration:none; color:inherit;">
+                <a href="<?= URLROOT ?>/products/<?= htmlspecialchars((string)$product['slug']) ?>" class="link-reset">
                     <div class="product-image-wrap">
                         <?php if (!empty($product['primary_image'])): ?>
                             <img

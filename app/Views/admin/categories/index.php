@@ -2,7 +2,7 @@
 
 <h1><?= htmlspecialchars($data['title']) ?></h1>
 
-<div style="margin-bottom:20px;">
+<div class="admin-page-actions">
     <a class="btn" href="<?= URLROOT ?>/admin/categories/create">+ Add Category</a>
 </div>
 
@@ -13,13 +13,13 @@
 
 <?php if ($deleteError !== ''): ?>
   <div class="card">
-    <p style="margin:0;color:red;"><?= htmlspecialchars($deleteError) ?></p>
+    <p class="flash-error"><?= htmlspecialchars($deleteError) ?></p>
   </div>
 <?php endif; ?>
 
 <?php if ($deleteSuccess !== ''): ?>
   <div class="card">
-    <p style="margin:0;color:green;"><?= htmlspecialchars($deleteSuccess) ?></p>
+    <p class="flash-success"><?= htmlspecialchars($deleteSuccess) ?></p>
   </div>
 <?php endif; ?>
 
@@ -28,7 +28,7 @@
 <?php if (count($categories) === 0): ?>
   <p>No categories yet.</p>
 <?php else: ?>
-<table border="1" cellpadding="8" cellspacing="0" style="width:100%;">
+<table class="admin-table admin-table--bordered">
   <thead>
     <tr>
       <th>Name</th>
@@ -48,7 +48,7 @@
       <td>
         <a class="btn secondary" href="<?= URLROOT ?>/admin/products?category_id=<?= (int)$c['id'] ?>">View products</a>
         <a class="btn secondary" href="<?= URLROOT ?>/admin/categories/<?= (int)$c['id'] ?>/edit">Edit</a>
-        <form method="post" action="<?= URLROOT ?>/admin/categories/<?= (int)$c['id'] ?>/delete" style="display:inline;" onsubmit="return confirm('Delete this category?');">
+        <form method="post" action="<?= URLROOT ?>/admin/categories/<?= (int)$c['id'] ?>/delete" class="admin-inline-form" data-confirm="Delete this category?">
           <button class="btn secondary" type="submit">Delete</button>
         </form>
       </td>

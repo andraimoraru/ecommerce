@@ -18,8 +18,8 @@ Orders
 Customers
 </a>
 
-<form action="<?= URLROOT ?>/logout" method="POST" style="padding:20px;">
-<button style="width:100%;padding:8px;border:none;background:#444;color:white;cursor:pointer;">
+<form action="<?= URLROOT ?>/logout" method="POST" class="sidebar__logout">
+<button class="sidebar__logout-button">
 Logout
 </button>
 </form>

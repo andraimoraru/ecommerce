@@ -5,29 +5,29 @@
 <?php if (!$category): ?>
   <p>Category not found.</p>
 <?php else: ?>
-  <p style="margin:0 0 18px 0;">
+  <p class="admin-back-row">
     <a href="<?= URLROOT ?>/admin/categories">← Back to categories</a>
   </p>
 
   <h1><?= htmlspecialchars($data['title'] ?? 'Edit Category') ?></h1>
 
-  <div class="card" style="max-width:780px;">
+  <div class="card admin-form-card">
     <form method="post" action="<?= URLROOT ?>/admin/categories/<?= (int)$category['id'] ?>">
-      <div style="margin-bottom:16px;">
+      <div class="admin-field">
         <label>Name</label><br>
-        <input type="text" name="name" value="<?= htmlspecialchars((string)$category['name']) ?>" style="width:100%;">
-        <?php if (!empty($errors['name'])): ?><p style="color:red;"><?= htmlspecialchars((string)$errors['name']) ?></p><?php endif; ?>
+        <input type="text" name="name" value="<?= htmlspecialchars((string)$category['name']) ?>">
+        <?php if (!empty($errors['name'])): ?><p class="text-danger"><?= htmlspecialchars((string)$errors['name']) ?></p><?php endif; ?>
       </div>
 
-      <div style="margin-bottom:16px;">
+      <div class="admin-field">
         <label>Slug</label><br>
-        <input type="text" name="slug" value="<?= htmlspecialchars((string)$category['slug']) ?>" style="width:100%;">
-        <?php if (!empty($errors['slug'])): ?><p style="color:red;"><?= htmlspecialchars((string)$errors['slug']) ?></p><?php endif; ?>
+        <input type="text" name="slug" value="<?= htmlspecialchars((string)$category['slug']) ?>">
+        <?php if (!empty($errors['slug'])): ?><p class="text-danger"><?= htmlspecialchars((string)$errors['slug']) ?></p><?php endif; ?>
       </div>
 
-      <div style="margin-bottom:16px;">
+      <div class="admin-field">
         <label>Parent Category</label><br>
-        <select name="parent_id" style="width:100%;">
+        <select name="parent_id">
           <option value="0">None</option>
           <?php foreach ($parents as $parent): ?>
             <option value="<?= (int)$parent['id'] ?>" <?= ((int)($category['parent_id'] ?? 0) === (int)$parent['id']) ? 'selected' : '' ?>>
@@ -35,17 +35,17 @@
             </option>
           <?php endforeach; ?>
         </select>
-        <?php if (!empty($errors['parent_id'])): ?><p style="color:red;"><?= htmlspecialchars((string)$errors['parent_id']) ?></p><?php endif; ?>
+        <?php if (!empty($errors['parent_id'])): ?><p class="text-danger"><?= htmlspecialchars((string)$errors['parent_id']) ?></p><?php endif; ?>
       </div>
 
-      <div style="margin-bottom:16px;">
+      <div class="admin-field">
         <label>
           <input type="checkbox" name="is_active" value="1" <?= ((int)($category['is_active'] ?? 0) === 1) ? 'checked' : '' ?>>
           Active
         </label>
       </div>
 
-      <div style="display:flex; gap:12px;">
+      <div class="admin-form-actions">
         <button class="btn" type="submit">Save Category</button>
         <a class="btn secondary" href="<?= URLROOT ?>/admin/categories">Cancel</a>
       </div>

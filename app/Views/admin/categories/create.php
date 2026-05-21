@@ -9,7 +9,7 @@
     <label>Name</label><br>
     <input name="name" value="<?= htmlspecialchars($old['name'] ?? '') ?>" required>
     <?php if (!empty($errors['name'])): ?>
-      <p style="color:red;"><?= htmlspecialchars($errors['name']) ?></p>
+      <p class="text-danger"><?= htmlspecialchars($errors['name']) ?></p>
     <?php endif; ?>
   </div>
 
@@ -17,7 +17,7 @@
     <label>Slug (optional)</label><br>
     <input name="slug" value="<?= htmlspecialchars($old['slug'] ?? '') ?>">
     <?php if (!empty($errors['slug'])): ?>
-      <p style="color:red;"><?= htmlspecialchars($errors['slug']) ?></p>
+      <p class="text-danger"><?= htmlspecialchars($errors['slug']) ?></p>
     <?php endif; ?>
   </div>
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Models\Category;
 use App\Models\Product;
 
 final class Pages extends Controller
@@ -18,10 +19,14 @@ final class Pages extends Controller
     public function index(): void
     {
         $products = (new Product())->allActiveForStorefront(12);
+        $categories = (new Category())->allActiveForStorefront();
 
         $data = [
-            'title' => 'Welcome to the modular e-commerce platform',
+            'title' => SITENAME . ' | Women Jewellery',
             'products' => $products,
+            'categories' => array_slice($categories, 0, 8),
+            'styles' => ['home'],
+            'body_class' => 'home-body',
         ];
         $this->render('pages/index', $data, 'main');
     }

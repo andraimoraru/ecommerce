@@ -62,27 +62,27 @@
                     <?php foreach ($items as $item): ?>
                         <div class="cart-item">
                             <div class="cart-item-details">
-                                <h3 style="margin:0 0 8px 0;">
+                                <h3 class="item-title">
                                     <?= htmlspecialchars((string)$item['product_name']) ?>
                                 </h3>
 
                                 <?php if (!empty($item['sku'])): ?>
-                                    <p style="margin:0 0 6px 0;">
+                                    <p class="item-copy item-copy--tight">
                                         SKU: <?= htmlspecialchars((string)$item['sku']) ?>
                                     </p>
                                 <?php endif; ?>
 
-                                <p style="margin:0 0 6px 0;">
+                                <p class="item-copy item-copy--tight">
                                     Qty: <?= (int)$item['quantity'] ?>
                                 </p>
 
-                                <p style="margin:0 0 6px 0;">
+                                <p class="item-copy item-copy--tight">
                                     Unit price:
                                     <?= htmlspecialchars((string)($order['currency'] ?? 'GBP')) ?>
                                     <?= number_format(((int)$item['unit_price_minor']) / 100, 2) ?>
                                 </p>
 
-                                <p style="margin:0;">
+                                <p class="item-copy">
                                     <strong>
                                         Line total:
                                         <?= htmlspecialchars((string)($order['currency'] ?? 'GBP')) ?>
@@ -135,7 +135,7 @@
 
                 <hr>
 
-                <p style="font-size:18px;">
+                <p class="summary-total">
                     Total:
                     <strong>
                         <?= htmlspecialchars((string)$order['currency']) ?>
@@ -143,7 +143,7 @@
                     </strong>
                 </p>
 
-                <a class="add-cart-btn" href="<?= URLROOT ?>/products" style="display:block;text-align:center;text-decoration:none;">
+                <a class="add-cart-btn button-link button-link--block" href="<?= URLROOT ?>/products">
                     Continue shopping
                 </a>
             </div>

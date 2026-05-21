@@ -3,9 +3,8 @@
 <a href="<?= URLROOT ?>/admin/orders">Orders</a>
 <a href="<?= URLROOT ?>/admin/customers">Customers</a>
 
-
-<form action="<?= URLROOT ?>/logout" method="POST" style="display:inline;">
-<button style="background:none;border:none;color:white;cursor:pointer;">
+<form action="<?= URLROOT ?>/logout" method="POST" class="nav-logout-form">
+<button class="nav-logout-button">
 Logout
 </button>
 </form>

@@ -32,13 +32,13 @@
                     </div>
 
                     <div class="cart-item-details">
-                        <h3 style="margin:0 0 8px 0;">
-                            <a href="<?= URLROOT ?>/products/<?= htmlspecialchars((string)$item['slug']) ?>" style="text-decoration:none;color:inherit;">
+                        <h3 class="item-title">
+                            <a href="<?= URLROOT ?>/products/<?= htmlspecialchars((string)$item['slug']) ?>" class="link-reset">
                                 <?= htmlspecialchars((string)$item['name']) ?>
                             </a>
                         </h3>
 
-                        <p style="margin:0 0 8px 0;">
+                        <p class="item-copy">
                             Unit price:
                             <strong>
                                 <?= htmlspecialchars((string)($item['currency'] ?? 'GBP')) ?>
@@ -46,7 +46,7 @@
                             </strong>
                         </p>
 
-                        <p style="margin:0 0 10px 0;">
+                        <p class="item-copy item-copy--spaced">
                             Line total:
                             <strong>
                                 <?= htmlspecialchars((string)($item['currency'] ?? 'GBP')) ?>
@@ -54,7 +54,7 @@
                             </strong>
                         </p>
 
-                        <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+                        <div class="inline-actions">
 
                             <form method="post" action="<?= URLROOT ?>/cart/update">
                                 <input type="hidden" name="product_id" value="<?= (int)$item['product_id'] ?>">
@@ -64,12 +64,12 @@
                                     name="quantity"
                                     min="1"
                                     value="<?= (int)$item['qty'] ?>"
-                                    style="width:80px;"
+                                    class="qty-input qty-input--small"
                                 >
                                 <button type="submit" class="small-btn">Update</button>
                             </form>
 
-                            <form method="post" action="<?= URLROOT ?>/cart/remove" onsubmit="return confirm('Remove this item from cart?');">
+                            <form method="post" action="<?= URLROOT ?>/cart/remove" data-confirm="Remove this item from cart?">
                                 <input type="hidden" name="product_id" value="<?= (int)$item['product_id'] ?>">
                                 <button type="submit" class="small-btn danger-btn">Remove</button>
                             </form>
@@ -98,12 +98,12 @@
 
             <hr>
 
-            <p style="font-size:18px;">
+            <p class="summary-total">
                 Total:
                 <strong>GBP <?= number_format($totalMinor / 100, 2) ?></strong>
             </p>
 
-            <a class="add-cart-btn" href="<?= URLROOT ?>/checkout" style="display:block;text-align:center;text-decoration:none;">
+            <a class="add-cart-btn button-link button-link--block" href="<?= URLROOT ?>/checkout">
                 Proceed to Checkout
             </a>
         </div>

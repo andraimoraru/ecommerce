@@ -1,4 +1,4 @@
-<h1 style="margin-bottom:20px;">Products</h1>
+<h1 class="page-title">Products</h1>
 
 <?php $products = $data['products'] ?? []; ?>
 
@@ -9,7 +9,7 @@
         <?php foreach ($products as $product): ?>
             <div class="product-card">
 
-                <a href="<?= URLROOT ?>/products/<?= htmlspecialchars((string)$product['slug']) ?>" style="text-decoration:none; color:inherit;">
+                <a href="<?= URLROOT ?>/products/<?= htmlspecialchars((string)$product['slug']) ?>" class="link-reset">
                     <div class="product-image-wrap">
                         <?php if (!empty($product['primary_image'])): ?>
                             <img
@@ -25,9 +25,6 @@
                     <h3 class="product-title"><?= htmlspecialchars((string)$product['name']) ?></h3>
                 </a>
 
-                <p class="product-desc">
-                    <?= htmlspecialchars(mb_strimwidth(strip_tags((string)($product['description'] ?? '')), 0, 100, '...')) ?>
-                </p>
 
                 <p class="product-price">
                     <?= htmlspecialchars((string)($product['currency'] ?? 'GBP')) ?>

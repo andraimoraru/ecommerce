@@ -1,4 +1,4 @@
-<h1 style="margin-bottom:20px;"><?= htmlspecialchars($data['title']) ?></h1>
+<h1 class="page-title"><?= htmlspecialchars($data['title']) ?></h1>
 
 <?php $categories = $data['categories'] ?? []; ?>
 
@@ -22,7 +22,7 @@
 
                 <a class="add-cart-btn"
                    href="<?= URLROOT ?>/categories/<?= htmlspecialchars((string)$category['slug']) ?>"
-                   style="display:inline-block; text-align:center; text-decoration:none;">
+                   class="button-link">
                     View Category
                 </a>
             </div>

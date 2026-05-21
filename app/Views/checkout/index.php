@@ -37,15 +37,15 @@
                         </div>
 
                         <div class="cart-item-details">
-                            <h3 style="margin:0 0 8px 0;">
+                            <h3 class="item-title">
                                 <?= htmlspecialchars((string)$item['name']) ?>
                             </h3>
 
-                            <p style="margin:0 0 8px 0;">
+                            <p class="item-copy">
                                 Qty: <?= (int)$item['qty'] ?>
                             </p>
 
-                            <p style="margin:0;">
+                            <p class="item-copy">
                                 <strong>
                                     <?= htmlspecialchars((string)($item['currency'] ?? 'GBP')) ?>
                                     <?= number_format(((int)$item['line_total_minor']) / 100, 2) ?>
@@ -63,78 +63,78 @@
 
                     <div>
                         <label>First Name</label><br>
-                        <input name="shipping_first_name" value="<?= htmlspecialchars((string)($old['shipping_first_name'] ?? '')) ?>" style="width:100%;">
-                        <?php if (!empty($errors['shipping_first_name'])): ?><p style="color:red;"><?= htmlspecialchars($errors['shipping_first_name']) ?></p><?php endif; ?>
+                        <input name="shipping_first_name" value="<?= htmlspecialchars((string)($old['shipping_first_name'] ?? '')) ?>">
+                        <?php if (!empty($errors['shipping_first_name'])): ?><p class="text-danger"><?= htmlspecialchars($errors['shipping_first_name']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Last Name</label><br>
-                        <input name="shipping_last_name" value="<?= htmlspecialchars((string)($old['shipping_last_name'] ?? '')) ?>" style="width:100%;">
-                        <?php if (!empty($errors['shipping_last_name'])): ?><p style="color:red;"><?= htmlspecialchars($errors['shipping_last_name']) ?></p><?php endif; ?>
+                        <input name="shipping_last_name" value="<?= htmlspecialchars((string)($old['shipping_last_name'] ?? '')) ?>">
+                        <?php if (!empty($errors['shipping_last_name'])): ?><p class="text-danger"><?= htmlspecialchars($errors['shipping_last_name']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Email</label><br>
-                        <input name="shipping_email" value="<?= htmlspecialchars((string)($old['shipping_email'] ?? '')) ?>" style="width:100%;">
-                        <?php if (!empty($errors['shipping_email'])): ?><p style="color:red;"><?= htmlspecialchars($errors['shipping_email']) ?></p><?php endif; ?>
+                        <input name="shipping_email" value="<?= htmlspecialchars((string)($old['shipping_email'] ?? '')) ?>">
+                        <?php if (!empty($errors['shipping_email'])): ?><p class="text-danger"><?= htmlspecialchars($errors['shipping_email']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Phone</label><br>
-                        <input name="shipping_phone" value="<?= htmlspecialchars((string)($old['shipping_phone'] ?? '')) ?>" style="width:100%;">
+                        <input name="shipping_phone" value="<?= htmlspecialchars((string)($old['shipping_phone'] ?? '')) ?>">
                     </div>
 
-                    <div style="grid-column:1 / -1;">
+                    <div class="checkout-field-full">
                         <label>Address line 1</label><br>
-                        <input name="shipping_line1" value="<?= htmlspecialchars((string)($old['shipping_line1'] ?? '')) ?>" style="width:100%;">
-                        <?php if (!empty($errors['shipping_line1'])): ?><p style="color:red;"><?= htmlspecialchars($errors['shipping_line1']) ?></p><?php endif; ?>
+                        <input name="shipping_line1" value="<?= htmlspecialchars((string)($old['shipping_line1'] ?? '')) ?>">
+                        <?php if (!empty($errors['shipping_line1'])): ?><p class="text-danger"><?= htmlspecialchars($errors['shipping_line1']) ?></p><?php endif; ?>
                     </div>
 
-                    <div style="grid-column:1 / -1;">
+                    <div class="checkout-field-full">
                         <label>Address line 2</label><br>
-                        <input name="shipping_line2" value="<?= htmlspecialchars((string)($old['shipping_line2'] ?? '')) ?>" style="width:100%;">
+                        <input name="shipping_line2" value="<?= htmlspecialchars((string)($old['shipping_line2'] ?? '')) ?>">
                     </div>
 
                     <div>
                         <label>City</label><br>
-                        <input name="shipping_city" value="<?= htmlspecialchars((string)($old['shipping_city'] ?? '')) ?>" style="width:100%;">
-                        <?php if (!empty($errors['shipping_city'])): ?><p style="color:red;"><?= htmlspecialchars($errors['shipping_city']) ?></p><?php endif; ?>
+                        <input name="shipping_city" value="<?= htmlspecialchars((string)($old['shipping_city'] ?? '')) ?>">
+                        <?php if (!empty($errors['shipping_city'])): ?><p class="text-danger"><?= htmlspecialchars($errors['shipping_city']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Region</label><br>
-                        <input name="shipping_region" value="<?= htmlspecialchars((string)($old['shipping_region'] ?? '')) ?>" style="width:100%;">
+                        <input name="shipping_region" value="<?= htmlspecialchars((string)($old['shipping_region'] ?? '')) ?>">
                     </div>
 
                     <div>
                         <label>Postcode</label><br>
-                        <input name="shipping_postcode" value="<?= htmlspecialchars((string)($old['shipping_postcode'] ?? '')) ?>" style="width:100%;">
-                        <?php if (!empty($errors['shipping_postcode'])): ?><p style="color:red;"><?= htmlspecialchars($errors['shipping_postcode']) ?></p><?php endif; ?>
+                        <input name="shipping_postcode" value="<?= htmlspecialchars((string)($old['shipping_postcode'] ?? '')) ?>">
+                        <?php if (!empty($errors['shipping_postcode'])): ?><p class="text-danger"><?= htmlspecialchars($errors['shipping_postcode']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Country</label><br>
-                        <input name="shipping_country" value="<?= htmlspecialchars((string)($old['shipping_country'] ?? '')) ?>" style="width:100%;">
-                        <?php if (!empty($errors['shipping_country'])): ?><p style="color:red;"><?= htmlspecialchars($errors['shipping_country']) ?></p><?php endif; ?>
+                        <input name="shipping_country" value="<?= htmlspecialchars((string)($old['shipping_country'] ?? '')) ?>">
+                        <?php if (!empty($errors['shipping_country'])): ?><p class="text-danger"><?= htmlspecialchars($errors['shipping_country']) ?></p><?php endif; ?>
                     </div>
 
                 </div>
 
-                <div style="margin-top:16px;">
+                <div class="stack-md">
                     <label>
                         <input
                             type="checkbox"
                             name="billing_same_as_shipping"
                             value="1"
                             <?= !empty($old['billing_same_as_shipping']) ? 'checked' : '' ?>
-                            onchange="toggleBilling()"
+                            data-billing-toggle
                         >
                         Billing address same as shipping
                     </label>
                 </div>
 
                 <?php if (!empty($_SESSION['user_id'])): ?>
-                    <div style="margin-top:10px;">
+                    <div class="stack-sm">
                         <label>
                             <input
                                 type="checkbox"
@@ -148,66 +148,66 @@
                 <?php endif; ?>
             </div>
 
-            <div class="cart-card" id="billingCard">
+            <div class="cart-card" id="billingCard" data-billing-card>
                 <h2>Billing Address</h2>
 
                 <div class="checkout-grid">
 
                     <div>
                         <label>First Name</label><br>
-                        <input name="billing_first_name" value="<?= htmlspecialchars((string)($old['billing_first_name'] ?? '')) ?>" style="width:100%;">
-                        <?php if (!empty($errors['billing_first_name'])): ?><p style="color:red;"><?= htmlspecialchars($errors['billing_first_name']) ?></p><?php endif; ?>
+                        <input name="billing_first_name" value="<?= htmlspecialchars((string)($old['billing_first_name'] ?? '')) ?>">
+                        <?php if (!empty($errors['billing_first_name'])): ?><p class="text-danger"><?= htmlspecialchars($errors['billing_first_name']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Last Name</label><br>
-                        <input name="billing_last_name" value="<?= htmlspecialchars((string)($old['billing_last_name'] ?? '')) ?>" style="width:100%;">
-                        <?php if (!empty($errors['billing_last_name'])): ?><p style="color:red;"><?= htmlspecialchars($errors['billing_last_name']) ?></p><?php endif; ?>
+                        <input name="billing_last_name" value="<?= htmlspecialchars((string)($old['billing_last_name'] ?? '')) ?>">
+                        <?php if (!empty($errors['billing_last_name'])): ?><p class="text-danger"><?= htmlspecialchars($errors['billing_last_name']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Email</label><br>
-                        <input name="billing_email" value="<?= htmlspecialchars((string)($old['billing_email'] ?? '')) ?>" style="width:100%;">
-                        <?php if (!empty($errors['billing_email'])): ?><p style="color:red;"><?= htmlspecialchars($errors['billing_email']) ?></p><?php endif; ?>
+                        <input name="billing_email" value="<?= htmlspecialchars((string)($old['billing_email'] ?? '')) ?>">
+                        <?php if (!empty($errors['billing_email'])): ?><p class="text-danger"><?= htmlspecialchars($errors['billing_email']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Phone</label><br>
-                        <input name="billing_phone" value="<?= htmlspecialchars((string)($old['billing_phone'] ?? '')) ?>" style="width:100%;">
+                        <input name="billing_phone" value="<?= htmlspecialchars((string)($old['billing_phone'] ?? '')) ?>">
                     </div>
 
-                    <div style="grid-column:1 / -1;">
+                    <div class="checkout-field-full">
                         <label>Address line 1</label><br>
-                        <input name="billing_line1" value="<?= htmlspecialchars((string)($old['billing_line1'] ?? '')) ?>" style="width:100%;">
-                        <?php if (!empty($errors['billing_line1'])): ?><p style="color:red;"><?= htmlspecialchars($errors['billing_line1']) ?></p><?php endif; ?>
+                        <input name="billing_line1" value="<?= htmlspecialchars((string)($old['billing_line1'] ?? '')) ?>">
+                        <?php if (!empty($errors['billing_line1'])): ?><p class="text-danger"><?= htmlspecialchars($errors['billing_line1']) ?></p><?php endif; ?>
                     </div>
 
-                    <div style="grid-column:1 / -1;">
+                    <div class="checkout-field-full">
                         <label>Address line 2</label><br>
-                        <input name="billing_line2" value="<?= htmlspecialchars((string)($old['billing_line2'] ?? '')) ?>" style="width:100%;">
+                        <input name="billing_line2" value="<?= htmlspecialchars((string)($old['billing_line2'] ?? '')) ?>">
                     </div>
 
                     <div>
                         <label>City</label><br>
-                        <input name="billing_city" value="<?= htmlspecialchars((string)($old['billing_city'] ?? '')) ?>" style="width:100%;">
-                        <?php if (!empty($errors['billing_city'])): ?><p style="color:red;"><?= htmlspecialchars($errors['billing_city']) ?></p><?php endif; ?>
+                        <input name="billing_city" value="<?= htmlspecialchars((string)($old['billing_city'] ?? '')) ?>">
+                        <?php if (!empty($errors['billing_city'])): ?><p class="text-danger"><?= htmlspecialchars($errors['billing_city']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Region</label><br>
-                        <input name="billing_region" value="<?= htmlspecialchars((string)($old['billing_region'] ?? '')) ?>" style="width:100%;">
+                        <input name="billing_region" value="<?= htmlspecialchars((string)($old['billing_region'] ?? '')) ?>">
                     </div>
 
                     <div>
                         <label>Postcode</label><br>
-                        <input name="billing_postcode" value="<?= htmlspecialchars((string)($old['billing_postcode'] ?? '')) ?>" style="width:100%;">
-                        <?php if (!empty($errors['billing_postcode'])): ?><p style="color:red;"><?= htmlspecialchars($errors['billing_postcode']) ?></p><?php endif; ?>
+                        <input name="billing_postcode" value="<?= htmlspecialchars((string)($old['billing_postcode'] ?? '')) ?>">
+                        <?php if (!empty($errors['billing_postcode'])): ?><p class="text-danger"><?= htmlspecialchars($errors['billing_postcode']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Country</label><br>
-                        <input name="billing_country" value="<?= htmlspecialchars((string)($old['billing_country'] ?? '')) ?>" style="width:100%;">
-                        <?php if (!empty($errors['billing_country'])): ?><p style="color:red;"><?= htmlspecialchars($errors['billing_country']) ?></p><?php endif; ?>
+                        <input name="billing_country" value="<?= htmlspecialchars((string)($old['billing_country'] ?? '')) ?>">
+                        <?php if (!empty($errors['billing_country'])): ?><p class="text-danger"><?= htmlspecialchars($errors['billing_country']) ?></p><?php endif; ?>
                     </div>
 
                 </div>
@@ -220,11 +220,11 @@
                 <h2>Summary</h2>
 
                 <?php if (!empty($errors['payment'])): ?>
-                    <p style="color:red;"><?= htmlspecialchars($errors['payment']) ?></p>
+                    <p class="text-danger"><?= htmlspecialchars($errors['payment']) ?></p>
                 <?php endif; ?>
 
                 <?php if (!$stripeConfigured): ?>
-                    <p style="color:#9a6700;">Stripe is not configured yet. Add your Stripe keys to the `.env` file before taking payments.</p>
+                    <p class="text-warning">Stripe is not configured yet. Add your Stripe keys to the `.env` file before taking payments.</p>
                 <?php endif; ?>
 
                 <p>
@@ -239,7 +239,7 @@
 
                 <hr>
 
-                <p style="font-size:18px;">
+                <p class="summary-total">
                     Total:
                     <strong>GBP <?= number_format($totalMinor / 100, 2) ?></strong>
                 </p>
@@ -250,16 +250,5 @@
 
     </div>
 </form>
-
-<script>
-function toggleBilling() {
-    const box = document.querySelector('[name="billing_same_as_shipping"]');
-    const billing = document.getElementById('billingCard');
-    if (!box || !billing) return;
-    billing.style.display = box.checked ? 'none' : 'block';
-}
-
-document.addEventListener('DOMContentLoaded', toggleBilling);
-</script>
 
 <?php endif; ?>

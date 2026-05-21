@@ -1,11 +1,18 @@
-<h1 style="margin-bottom:20px;">Admin</h1>
+<h1 class="page-title">Admin</h1>
 
-<div style="margin-bottom:25px;">
-    <a href="<?= URLROOT ?>/admin/products/create" style="display:inline-block;padding:10px 18px;background:#111;color:#fff;text-decoration:none;border-radius:4px;margin-right:10px;">
+<div class="admin-page-actions admin-button-row">
+    <a href="<?= URLROOT ?>/admin/products/create" class="btn">
         + Add Product
     </a>
 
-    <a href="<?= URLROOT ?>/admin/categories/create" style="display:inline-block;padding:10px 18px;background:#555;color:#fff;text-decoration:none;border-radius:4px;">
+    <a href="<?= URLROOT ?>/admin/categories/create" class="btn secondary">
         + Add Category
     </a>
+</div>
+
+<div class="card">
+    <h2 class="admin-section-title">Quick Links</h2>
+    <p><a href="<?= URLROOT ?>/admin/products">View products</a></p>
+    <p><a href="<?= URLROOT ?>/admin/categories">View categories</a></p>
+    <p><a href="<?= URLROOT ?>/admin/orders">View orders</a></p>
 </div>

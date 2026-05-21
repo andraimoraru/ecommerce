@@ -12,7 +12,7 @@
       <label>Name</label><br>
       <input name="name" value="<?= htmlspecialchars((string)($old['name'] ?? '')) ?>" required>
       <?php if (!empty($errors['name'])): ?>
-        <p style="color:red;"><?= htmlspecialchars($errors['name']) ?></p>
+        <p class="text-danger"><?= htmlspecialchars($errors['name']) ?></p>
       <?php endif; ?>
     </div>
 
@@ -20,7 +20,7 @@
       <label>SKU</label><br>
       <input name="sku" value="<?= htmlspecialchars((string)($old['sku'] ?? '')) ?>" required>
       <?php if (!empty($errors['sku'])): ?>
-        <p style="color:red;"><?= htmlspecialchars($errors['sku']) ?></p>
+        <p class="text-danger"><?= htmlspecialchars($errors['sku']) ?></p>
       <?php endif; ?>
     </div>
 
@@ -28,7 +28,7 @@
       <label>Slug (optional)</label><br>
       <input name="slug" value="<?= htmlspecialchars((string)($old['slug'] ?? '')) ?>" placeholder="gold-necklace">
       <?php if (!empty($errors['slug'])): ?>
-        <p style="color:red;"><?= htmlspecialchars($errors['slug']) ?></p>
+        <p class="text-danger"><?= htmlspecialchars($errors['slug']) ?></p>
       <?php endif; ?>
     </div>
 
@@ -48,7 +48,7 @@
       >
       <small>£19.99 = 1999</small>
       <?php if (!empty($errors['price_minor'])): ?>
-        <p style="color:red;"><?= htmlspecialchars($errors['price_minor']) ?></p>
+        <p class="text-danger"><?= htmlspecialchars($errors['price_minor']) ?></p>
       <?php endif; ?>
     </div>
 
@@ -67,7 +67,7 @@
         <?php endforeach; ?>
       </select>
       <?php if (!empty($errors['status'])): ?>
-        <p style="color:red;"><?= htmlspecialchars($errors['status']) ?></p>
+        <p class="text-danger"><?= htmlspecialchars($errors['status']) ?></p>
       <?php endif; ?>
     </div>
   </fieldset>
@@ -77,7 +77,7 @@
 
     <div>
       <label>Meta Title</label><br>
-      <input name="meta_title" value="<?= htmlspecialchars((string)($old['meta_title'] ?? '')) ?>" style="width: 70%;">
+      <input name="meta_title" value="<?= htmlspecialchars((string)($old['meta_title'] ?? '')) ?>">
     </div>
 
     <div>
@@ -111,7 +111,7 @@
         value="<?= htmlspecialchars((string)($old['stock_on_hand'] ?? 0)) ?>"
       >
       <?php if (!empty($errors['stock_on_hand'])): ?>
-        <p style="color:red;"><?= htmlspecialchars($errors['stock_on_hand']) ?></p>
+        <p class="text-danger"><?= htmlspecialchars($errors['stock_on_hand']) ?></p>
       <?php endif; ?>
     </div>
   </fieldset>
@@ -120,37 +120,37 @@
     <legend>Upload Images</legend>
 
     <?php if (!empty($errors['images'])): ?>
-      <p style="color:red;"><?= htmlspecialchars($errors['images']) ?></p>
+      <p class="text-danger"><?= htmlspecialchars($errors['images']) ?></p>
     <?php endif; ?>
 
-    <div style="border:1px solid #ddd; padding:10px; margin-bottom:10px;">
+    <div class="admin-image-panel">
       <label>Primary image</label><br>
       <input type="file" name="images[]" accept=".jpg,.jpeg,.png,.webp"><br><br>
 
       <label>Alt text</label><br>
-      <input name="image_alt[]" value="<?= htmlspecialchars((string)($old['image_alt'][0] ?? '')) ?>" style="width:70%;"><br><br>
+      <input name="image_alt[]" value="<?= htmlspecialchars((string)($old['image_alt'][0] ?? '')) ?>"><br><br>
 
       <label>Sort order</label><br>
       <input type="number" name="image_sort[]" value="<?= htmlspecialchars((string)($old['image_sort'][0] ?? '0')) ?>">
     </div>
 
-    <div style="border:1px solid #ddd; padding:10px; margin-bottom:10px;">
+    <div class="admin-image-panel">
       <label>Additional image</label><br>
       <input type="file" name="images[]" accept=".jpg,.jpeg,.png,.webp"><br><br>
 
       <label>Alt text</label><br>
-      <input name="image_alt[]" value="<?= htmlspecialchars((string)($old['image_alt'][1] ?? '')) ?>" style="width:70%;"><br><br>
+      <input name="image_alt[]" value="<?= htmlspecialchars((string)($old['image_alt'][1] ?? '')) ?>"><br><br>
 
       <label>Sort order</label><br>
       <input type="number" name="image_sort[]" value="<?= htmlspecialchars((string)($old['image_sort'][1] ?? '1')) ?>">
     </div>
 
-    <div style="border:1px solid #ddd; padding:10px; margin-bottom:10px;">
+    <div class="admin-image-panel">
       <label>Additional image</label><br>
       <input type="file" name="images[]" accept=".jpg,.jpeg,.png,.webp"><br><br>
 
       <label>Alt text</label><br>
-      <input name="image_alt[]" value="<?= htmlspecialchars((string)($old['image_alt'][2] ?? '')) ?>" style="width:70%;"><br><br>
+      <input name="image_alt[]" value="<?= htmlspecialchars((string)($old['image_alt'][2] ?? '')) ?>"><br><br>
 
       <label>Sort order</label><br>
       <input type="number" name="image_sort[]" value="<?= htmlspecialchars((string)($old['image_sort'][2] ?? '2')) ?>">

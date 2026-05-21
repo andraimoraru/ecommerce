@@ -9,31 +9,31 @@
     <p>No customers found.</p>
 <?php else: ?>
     <div class="card">
-        <table style="width:100%; border-collapse:collapse;">
+        <table class="admin-table">
             <thead>
-                <tr style="background:#f5f5f5;">
-                    <th style="padding:10px; text-align:left;">Customer</th>
-                    <th style="padding:10px; text-align:left;">Email</th>
-                    <th style="padding:10px; text-align:left;">Phone</th>
-                    <th style="padding:10px; text-align:left;">Orders</th>
-                    <th style="padding:10px; text-align:left;">Status</th>
-                    <th style="padding:10px; text-align:left;">Joined</th>
-                    <th style="padding:10px; text-align:left;">Actions</th>
+                <tr>
+                    <th>Customer</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Orders</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($customers as $customer): ?>
-                    <tr style="border-bottom:1px solid #ddd;">
-                        <td style="padding:10px;">
+                    <tr>
+                        <td>
                             <strong><?= htmlspecialchars(trim((string)$customer['first_name'] . ' ' . (string)$customer['last_name'])) ?></strong><br>
-                            <small style="color:#777;">#<?= (int)$customer['id'] ?></small>
+                            <small class="admin-meta">#<?= (int)$customer['id'] ?></small>
                         </td>
-                        <td style="padding:10px;"><?= htmlspecialchars((string)$customer['email']) ?></td>
-                        <td style="padding:10px;"><?= htmlspecialchars((string)($customer['phone'] ?: '—')) ?></td>
-                        <td style="padding:10px;"><?= (int)$customer['order_count'] ?></td>
-                        <td style="padding:10px;"><?= ((int)$customer['is_active'] === 1) ? 'Active' : 'Inactive' ?></td>
-                        <td style="padding:10px;"><?= htmlspecialchars((string)$customer['created_at']) ?></td>
-                        <td style="padding:10px;">
+                        <td><?= htmlspecialchars((string)$customer['email']) ?></td>
+                        <td><?= htmlspecialchars((string)($customer['phone'] ?: '—')) ?></td>
+                        <td><?= (int)$customer['order_count'] ?></td>
+                        <td><?= ((int)$customer['is_active'] === 1) ? 'Active' : 'Inactive' ?></td>
+                        <td><?= htmlspecialchars((string)$customer['created_at']) ?></td>
+                        <td>
                             <a class="btn secondary" href="<?= URLROOT ?>/admin/customers/<?= (int)$customer['id'] ?>">View</a>
                             <a class="btn secondary" href="<?= URLROOT ?>/admin/customers/<?= (int)$customer['id'] ?>/edit">Edit</a>
                         </td>
@@ -44,7 +44,7 @@
     </div>
 
     <?php if ($totalPages > 1): ?>
-        <div style="display:flex; gap:10px; align-items:center; margin-top:16px;">
+        <div class="admin-pagination">
             <?php if ($currentPage > 1): ?>
                 <a class="btn secondary" href="<?= URLROOT ?>/admin/customers?page=<?= $currentPage - 1 ?>">Previous</a>
             <?php endif; ?>
