@@ -110,6 +110,54 @@ textarea{
     gap:22px;
 }
 
+.site-header__actions,
+.site-header-legacy__actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.icon-link{
+    position:relative;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:42px;
+    height:42px;
+    border:1px solid var(--line);
+    border-radius:999px;
+    background:#ffffff;
+    color:var(--text);
+    text-decoration:none;
+}
+
+.icon-link:hover{
+    border-color:var(--line-strong);
+    color:var(--accent-deep);
+}
+
+.icon-link svg{
+    width:18px;
+    height:18px;
+}
+
+.cart-badge{
+    position:absolute;
+    top:-4px;
+    right:-4px;
+    min-width:19px;
+    height:19px;
+    padding:0 5px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:999px;
+    background:#111111;
+    color:#ffffff;
+    font-size:11px;
+    line-height:1;
+}
+
 .site-nav a,
 .mobile-nav a{
     text-decoration:none;
@@ -200,6 +248,7 @@ textarea{
     letter-spacing:0.08em;
     text-transform:uppercase;
     font-size:12px;
+    text-align: center;
     box-shadow:none;
 }
 
@@ -613,6 +662,70 @@ textarea{
     margin-top:8px;
 }
 
+.account-layout{
+    display:grid;
+    grid-template-columns:260px minmax(0, 1fr);
+    gap:28px;
+    align-items:start;
+}
+
+.account-sidebar,
+.account-panel__card{
+    border:1px solid var(--line);
+    background:#ffffff;
+    box-shadow:var(--shadow);
+}
+
+.account-sidebar{
+    padding:24px;
+}
+
+.account-sidebar__title{
+    margin:0 0 18px;
+    font-size:22px;
+}
+
+.account-sidebar__nav{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.account-sidebar__link,
+.account-sidebar__button{
+    display:flex;
+    align-items:center;
+    width:100%;
+    padding:12px 14px;
+    border:1px solid var(--line);
+    background:#ffffff;
+    color:var(--text);
+    text-decoration:none;
+    cursor:pointer;
+    font:inherit;
+    text-align:left;
+}
+
+.account-sidebar__link:hover,
+.account-sidebar__button:hover,
+.account-sidebar__link.is-active{
+    border-color:#111111;
+    color:var(--accent-deep);
+}
+
+.account-sidebar__form{
+    margin:0;
+}
+
+.account-panel__lead{
+    margin-top:0;
+    color:var(--muted);
+}
+
+.account-panel__card{
+    padding:24px;
+}
+
 .home-ambassador__visual--image{
     background-size:cover;
     background-position:center;
@@ -668,6 +781,15 @@ textarea{
     .site-brand__text{
         font-size:18px;
         letter-spacing:0.12em;
+    }
+
+    .site-header__actions .icon-link:first-child,
+    .site-header-legacy__actions .icon-link:first-child{
+        display:none;
+    }
+
+    .account-layout{
+        grid-template-columns:1fr;
     }
 }
 
