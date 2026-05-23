@@ -1,5 +1,8 @@
 <?php $category = $data['category'] ?? null; ?>
 <?php $products = $data['products'] ?? []; ?>
+<?php $pagination = $data['pagination'] ?? ['page' => 1, 'total_pages' => 1]; ?>
+<?php $currentPage = (int)($pagination['page'] ?? 1); ?>
+<?php $totalPages = (int)($pagination['total_pages'] ?? 1); ?>
 
 <a class="category-back" href="<?= URLROOT ?>/categories">← Back to categories</a>
 
@@ -48,4 +51,16 @@
             </div>
         <?php endforeach; ?>
     </div>
+
+    <?php if ($totalPages > 1): ?>
+        <div class="admin-pagination">
+            <?php if ($currentPage > 1): ?>
+                <a class="btn secondary" href="<?= URLROOT ?>/categories/<?= htmlspecialchars((string)($category['slug'] ?? '')) ?>?page=<?= $currentPage - 1 ?>">Previous</a>
+            <?php endif; ?>
+            <span>Page <?= $currentPage ?> of <?= $totalPages ?></span>
+            <?php if ($currentPage < $totalPages): ?>
+                <a class="btn secondary" href="<?= URLROOT ?>/categories/<?= htmlspecialchars((string)($category['slug'] ?? '')) ?>?page=<?= $currentPage + 1 ?>">Next</a>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 <?php endif; ?>

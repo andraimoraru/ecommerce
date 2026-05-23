@@ -92,6 +92,18 @@ $testimonials = [
             <div class="home-categories__grid">
                 <?php foreach ($categories as $category): ?>
                     <a class="home-categories__item" href="<?= URLROOT ?>/categories/<?= htmlspecialchars((string)$category['slug']) ?>">
+                        <div class="home-categories__image-wrap">
+                            <?php if (!empty($category['featured_image'])): ?>
+                                <img
+                                    src="<?= htmlspecialchars((string)$category['featured_image']) ?>"
+                                    alt="<?= htmlspecialchars((string)$category['name']) ?>"
+                                    class="home-categories__image"
+                                    loading="lazy"
+                                >
+                            <?php else: ?>
+                                <div class="product-placeholder">No image</div>
+                            <?php endif; ?>
+                        </div>
                         <span class="home-categories__name"><?= htmlspecialchars((string)$category['name']) ?></span>
                         <span class="home-categories__meta"><?= (int)$category['product_count'] ?> products</span>
                     </a>

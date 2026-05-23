@@ -220,9 +220,29 @@ final class Category
                 c.name,
                 c.slug,
                 c.parent_id,
-                COUNT(pc.product_id) AS product_count
+                COUNT(p.id) AS product_count,
+                (
+                    SELECT pi.url
+                    FROM product_categories pc2
+                    INNER JOIN products p2
+                        ON p2.id = pc2.product_id
+                       AND p2.status = 'ACTIVE'
+                    INNER JOIN product_images pi
+                        ON pi.product_id = p2.id
+                    WHERE pc2.category_id = c.id
+                      AND pi.id = (
+                          SELECT pi2.id
+                          FROM product_images pi2
+                          WHERE pi2.product_id = p2.id
+                          ORDER BY pi2.sort_order ASC, pi2.id ASC
+                          LIMIT 1
+                      )
+                    ORDER BY RAND()
+                    LIMIT 1
+                ) AS featured_image
             FROM categories c
             LEFT JOIN product_categories pc ON pc.category_id = c.id
+            LEFT JOIN products p ON p.id = pc.product_id AND p.status = 'ACTIVE'
             WHERE c.is_active = 1
             GROUP BY c.id, c.name, c.slug, c.parent_id
             ORDER BY c.name ASC

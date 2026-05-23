@@ -35,12 +35,25 @@ final class Categories extends Controller
             return;
         }
 
-        $products = (new Product())->allActiveByCategoryId((int)$category['id'], 48);
+        $productModel = new Product();
+        $perPage = 24;
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $totalProducts = $productModel->countActiveByCategoryId((int)$category['id']);
+        $totalPages = max(1, (int)ceil($totalProducts / $perPage));
+        $page = min($page, $totalPages);
+        $offset = ($page - 1) * $perPage;
+        $products = $productModel->allActiveByCategoryId((int)$category['id'], $perPage, $offset);
 
         $data = [
             'title' => $category['name'],
             'category' => $category,
             'products' => $products,
+            'pagination' => [
+                'page' => $page,
+                'per_page' => $perPage,
+                'total_items' => $totalProducts,
+                'total_pages' => $totalPages,
+            ],
         ];
 
         $this->render('categories/show', $data, 'main');

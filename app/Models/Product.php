@@ -406,8 +406,8 @@ final class Product
         ]);
     }
 
-    // Return active products that belong to a specific category.
-    public function allActiveByCategoryId(int $categoryId, int $limit = 48): array
+    // Return paginated active products that belong to a specific category.
+    public function allActiveByCategoryId(int $categoryId, int $limit = 24, int $offset = 0): array
     {
         $stmt = $this->pdo->prepare("
             SELECT
@@ -431,13 +431,31 @@ final class Product
             AND p.status = 'ACTIVE'
             ORDER BY p.created_at DESC
             LIMIT :lim
+            OFFSET :off
         ");
 
         $stmt->bindValue(':category_id', $categoryId, \PDO::PARAM_INT);
         $stmt->bindValue(':lim', $limit, \PDO::PARAM_INT);
+        $stmt->bindValue(':off', $offset, \PDO::PARAM_INT);
         $stmt->execute();
 
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    // Count active products within one category for pagination.
+    public function countActiveByCategoryId(int $categoryId): int
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT COUNT(*)
+            FROM products p
+            INNER JOIN product_categories pc ON pc.product_id = p.id
+            WHERE pc.category_id = :category_id
+              AND p.status = 'ACTIVE'
+        ");
+
+        $stmt->execute(['category_id' => $categoryId]);
+
+        return (int)$stmt->fetchColumn();
     }
 
     // Return all gallery images for a product in display order.
