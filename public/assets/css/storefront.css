@@ -238,8 +238,9 @@ textarea{
     justify-content:center;
     gap:10px;
     min-height:48px;
+    width: 100%;
     padding:0 20px;
-    border:none;
+    border:10px solid transparent;
     border-radius:10px;
     background:#111111;
     color:#fff;
@@ -247,9 +248,10 @@ textarea{
     text-decoration:none;
     letter-spacing:0.08em;
     text-transform:uppercase;
-    font-size:12px;
     text-align: center;
+    font-size:12px;
     box-shadow:none;
+    margin-top: 10px;
 }
 
 .btn.secondary{
@@ -257,6 +259,20 @@ textarea{
     color:var(--text);
     border:1px solid #111111;
     box-shadow:none;
+}
+
+.admin-pagination{
+    margin-top:32px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+    flex-wrap:wrap;
+}
+
+.admin-pagination .btn{
+    width:auto;
+    margin-top:0;
 }
 
 .danger-btn{

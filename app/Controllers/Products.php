@@ -11,11 +11,24 @@ final class Products extends Controller
     // Render the main product listing page.
     public function index(): void
     {
-        $products = (new Product())->allActiveForStorefront(48);
+        $productModel = new Product();
+        $perPage = 24;
+        $page = max(1, (int)($_GET['page'] ?? 1));
+        $totalProducts = $productModel->countActiveForStorefront();
+        $totalPages = max(1, (int)ceil($totalProducts / $perPage));
+        $page = min($page, $totalPages);
+        $offset = ($page - 1) * $perPage;
+        $products = $productModel->allActiveForStorefront($perPage, $offset);
 
         $data = [
             'title' => 'Products',
             'products' => $products,
+            'pagination' => [
+                'page' => $page,
+                'per_page' => $perPage,
+                'total_items' => $totalProducts,
+                'total_pages' => $totalPages,
+            ],
         ];
 
         $this->render('products/index', $data, 'main');

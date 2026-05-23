@@ -34,11 +34,6 @@
 
                     <h3 class="product-title"><?= htmlspecialchars((string)$product['name']) ?></h3>
                 </a>
-
-                <p class="product-desc">
-                    <?= htmlspecialchars(mb_strimwidth(strip_tags((string)($product['description'] ?? '')), 0, 100, '...')) ?>
-                </p>
-
                 <p class="product-price">
                     <?= htmlspecialchars((string)($product['currency'] ?? 'GBP')) ?>
                     <?= number_format(((int)$product['price_minor']) / 100, 2) ?>

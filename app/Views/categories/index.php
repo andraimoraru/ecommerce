@@ -11,11 +11,6 @@
                 <h3 class="product-title">
                     <?= htmlspecialchars((string)$category['name']) ?>
                 </h3>
-
-                <p class="product-desc">
-                    Slug: <?= htmlspecialchars((string)$category['slug']) ?>
-                </p>
-
                 <p class="product-price">
                     Products: <?= (int)$category['product_count'] ?>
                 </p>

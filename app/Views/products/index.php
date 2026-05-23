@@ -1,6 +1,9 @@
 <h1 class="page-title">Products</h1>
 
 <?php $products = $data['products'] ?? []; ?>
+<?php $pagination = $data['pagination'] ?? ['page' => 1, 'total_pages' => 1]; ?>
+<?php $currentPage = (int)($pagination['page'] ?? 1); ?>
+<?php $totalPages = (int)($pagination['total_pages'] ?? 1); ?>
 
 <?php if (!$products): ?>
     <p>No products available.</p>
@@ -25,7 +28,6 @@
                     <h3 class="product-title"><?= htmlspecialchars((string)$product['name']) ?></h3>
                 </a>
 
-
                 <p class="product-price">
                     <?= htmlspecialchars((string)($product['currency'] ?? 'GBP')) ?>
                     <?= number_format(((int)$product['price_minor']) / 100, 2) ?>
@@ -46,4 +48,16 @@
             </div>
         <?php endforeach; ?>
     </div>
+
+    <?php if ($totalPages > 1): ?>
+        <div class="admin-pagination">
+            <?php if ($currentPage > 1): ?>
+                <a class="btn secondary" href="<?= URLROOT ?>/products?page=<?= $currentPage - 1 ?>">Previous</a>
+            <?php endif; ?>
+            <span>Page <?= $currentPage ?> of <?= $totalPages ?></span>
+            <?php if ($currentPage < $totalPages): ?>
+                <a class="btn secondary" href="<?= URLROOT ?>/products?page=<?= $currentPage + 1 ?>">Next</a>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 <?php endif; ?>

@@ -32,7 +32,6 @@ $testimonials = [
 
             <div class="home-hero__actions">
                 <a class="btn" href="<?= URLROOT ?>/products">Shop the collection</a>
-                <a class="btn secondary" href="<?= URLROOT ?>/categories">Browse categories</a>
             </div>
 
             <div class="home-hero__points">
@@ -190,40 +189,3 @@ $testimonials = [
         </div>
     </section>
 </div>
-
-<?php if (!$products): ?>
-    <p>No products available yet.</p>
-<?php else: ?>
-    <div class="product-grid">
-        <?php foreach ($products as $product): ?>
-            <div class="product-card">
-
-                <a href="<?= URLROOT ?>/products/<?= htmlspecialchars((string)$product['slug']) ?>" class="link-reset">
-                    <div class="product-image-wrap">
-                        <?php if (!empty($product['primary_image'])): ?>
-                            <img
-                                src="<?= htmlspecialchars((string)$product['primary_image']) ?>"
-                                alt="<?= htmlspecialchars((string)$product['name']) ?>"
-                                class="product-image"
-                            >
-                        <?php else: ?>
-                            <div class="product-placeholder">No image</div>
-                        <?php endif; ?>
-                    </div>
-
-                </a>
-                <p class="product-price">
-                    <?= htmlspecialchars((string)($product['currency'] ?? 'GBP')) ?>
-                    <?= number_format(((int)$product['price_minor']) / 100, 2) ?>
-                </p>
-
-                <form method="post" action="<?= URLROOT ?>/cart/items">
-                    <input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>">
-                    <input type="hidden" name="quantity" value="1">
-                    <button type="submit" class="add-cart-btn">Add to cart</button>
-                </form>
-
-            </div>
-        <?php endforeach; ?>
-    </div>
-<?php endif; ?>

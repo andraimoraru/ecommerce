@@ -98,8 +98,8 @@ final class Product
         return (int)$stmt->fetchColumn();
     }
 
-    // Return the latest active products for storefront listings.
-    public function allActiveForStorefront(int $limit = 12): array
+    // Return paginated active products for storefront listings.
+    public function allActiveForStorefront(int $limit = 24, int $offset = 0): array
     {
         $stmt = $this->pdo->prepare("
             SELECT
@@ -121,12 +121,26 @@ final class Product
             WHERE p.status = 'ACTIVE'
             ORDER BY p.created_at DESC
             LIMIT :lim
+            OFFSET :off
         ");
 
         $stmt->bindValue(':lim', $limit, \PDO::PARAM_INT);
+        $stmt->bindValue(':off', $offset, \PDO::PARAM_INT);
         $stmt->execute();
 
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    // Count active storefront products for pagination.
+    public function countActiveForStorefront(): int
+    {
+        $stmt = $this->pdo->query("
+            SELECT COUNT(*)
+            FROM products
+            WHERE status = 'ACTIVE'
+        ");
+
+        return (int)$stmt->fetchColumn();
     }
 
     // Fetch one active product by slug for the storefront.
