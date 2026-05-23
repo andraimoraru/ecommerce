@@ -144,6 +144,8 @@ final class Checkout extends Controller
 
         $items = $cart['items'];
         $subtotalMinor = (int)($cart['total_minor'] ?? 0);
+        $shippingMinor = $this->calculateShippingMinor($old['shipping_country']);
+        $totalMinor = $subtotalMinor + $shippingMinor;
 
         $mappedItems = array_map(static function (array $item): array {
             return [
@@ -163,10 +165,10 @@ final class Checkout extends Controller
             'status' => 'PENDING_PAYMENT',
             'currency' => 'GBP',
             'subtotal_minor' => $subtotalMinor,
-            'shipping_minor' => 0,
+            'shipping_minor' => $shippingMinor,
             'tax_minor' => 0,
             'discount_minor' => 0,
-            'total_minor' => $subtotalMinor,
+            'total_minor' => $totalMinor,
             'customer_email' => $old['shipping_email'],
             'customer_first_name' => $old['shipping_first_name'],
             'customer_last_name' => $old['shipping_last_name'],
@@ -386,13 +388,33 @@ final class Checkout extends Controller
     // Render the checkout form with a consistent view payload.
     private function renderCheckout(array $cart, array $errors, array $old): void
     {
+        $subtotalMinor = (int)($cart['total_minor'] ?? 0);
+        $shippingCountry = (string)($old['shipping_country'] ?? '');
+        $shippingMinor = $shippingCountry !== ''
+            ? $this->calculateShippingMinor($shippingCountry)
+            : 0;
+
         $this->render('checkout/index', [
             'title' => 'Checkout',
             'cart' => $cart,
             'errors' => $errors,
             'old' => $old,
+            'shipping_minor' => $shippingMinor,
+            'total_minor' => $subtotalMinor + $shippingMinor,
             'stripe_configured' => (new StripeGateway())->isConfigured(),
         ], 'main');
+    }
+
+    // Apply the temporary flat shipping rule by destination country.
+    private function calculateShippingMinor(string $country): int
+    {
+        $normalized = strtoupper(trim($country));
+
+        if (in_array($normalized, ['UK', 'UNITED KINGDOM', 'GB', 'GREAT BRITAIN'], true)) {
+            return 299;
+        }
+
+        return 1099;
     }
 
     // Persist the optional saved address only after a confirmed payment.

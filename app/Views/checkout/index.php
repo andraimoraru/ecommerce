@@ -3,9 +3,13 @@
 <?php $cart = $data['cart'] ?? ['items' => [], 'total_minor' => 0]; ?>
 <?php $items = $cart['items'] ?? []; ?>
 <?php $totalMinor = (int)($cart['total_minor'] ?? 0); ?>
+<?php $shippingMinor = (int)($data['shipping_minor'] ?? 0); ?>
+<?php $grandTotalMinor = (int)($data['total_minor'] ?? ($totalMinor + $shippingMinor)); ?>
 <?php $old = $data['old'] ?? []; ?>
 <?php $errors = $data['errors'] ?? []; ?>
 <?php $stripeConfigured = !empty($data['stripe_configured']); ?>
+<?php $shippingCountry = trim((string)($old['shipping_country'] ?? '')); ?>
+<?php $shippingKnown = $shippingCountry !== ''; ?>
 
 <?php if (!$items): ?>
     <p>Your cart is empty.</p>
@@ -114,8 +118,14 @@
 
                     <div>
                         <label>Country</label><br>
-                        <input name="shipping_country" value="<?= htmlspecialchars((string)($old['shipping_country'] ?? '')) ?>">
+                        <input
+                            name="shipping_country"
+                            value="<?= htmlspecialchars((string)($old['shipping_country'] ?? '')) ?>"
+                            placeholder="United Kingdom"
+                            data-shipping-country
+                        >
                         <?php if (!empty($errors['shipping_country'])): ?><p class="text-danger"><?= htmlspecialchars($errors['shipping_country']) ?></p><?php endif; ?>
+                        <p class="text-muted checkout-help">Enter your shipping country to confirm delivery cost before payment.</p>
                     </div>
 
                 </div>
@@ -229,19 +239,35 @@
 
                 <p>
                     Subtotal:
-                    <strong>GBP <?= number_format($totalMinor / 100, 2) ?></strong>
+                    <strong data-checkout-subtotal-minor="<?= $totalMinor ?>">GBP <?= number_format($totalMinor / 100, 2) ?></strong>
                 </p>
 
                 <p>
                     Shipping:
-                    <strong>GBP 0.00</strong>
+                    <strong data-checkout-shipping>
+                        <?php if ($shippingKnown): ?>
+                            GBP <?= number_format($shippingMinor / 100, 2) ?>
+                        <?php else: ?>
+                            Enter shipping country
+                        <?php endif; ?>
+                    </strong>
+                </p>
+
+                <p class="item-copy" data-checkout-shipping-note>
+                    <?php if ($shippingKnown): ?>
+                        <?= preg_match('/^(UK|UNITED KINGDOM|GB|GREAT BRITAIN)$/i', $shippingCountry) ? 'UK delivery rate applied.' : 'International delivery rate applied.' ?>
+                    <?php else: ?>
+                        UK delivery is GBP 2.99. International delivery is GBP 10.99.
+                    <?php endif; ?>
                 </p>
 
                 <hr>
 
                 <p class="summary-total">
                     Total:
-                    <strong>GBP <?= number_format($totalMinor / 100, 2) ?></strong>
+                    <strong data-checkout-total>
+                        GBP <?= number_format($grandTotalMinor / 100, 2) ?>
+                    </strong>
                 </p>
 
                 <button class="add-cart-btn" type="submit">Continue to secure payment</button>

@@ -205,6 +205,45 @@ textarea{
     padding:34px 24px 80px;
 }
 
+.flash{
+    margin-bottom:24px;
+    padding:16px 18px;
+    border:1px solid var(--line);
+    background:#ffffff;
+    box-shadow:var(--shadow);
+}
+
+.flash--success{
+    border-color:#cddfce;
+    background:#f4faf4;
+}
+
+.flash--error{
+    border-color:#e6c9c9;
+    background:#fff6f6;
+}
+
+.flash--info{
+    border-color:#d8d0bf;
+    background:#fbf7ef;
+}
+
+.flash__body{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.flash__title{
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+}
+
+.flash__message{
+    line-height:1.6;
+}
+
 .eyebrow{
     margin:0 0 14px;
     color:var(--accent-deep);
@@ -635,6 +674,11 @@ textarea{
 
 .stack-md{
     margin-top:16px;
+}
+
+.checkout-help{
+    margin-top:8px;
+    font-size:13px;
 }
 
 .summary-total{
