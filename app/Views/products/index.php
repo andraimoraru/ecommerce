@@ -36,9 +36,6 @@
                 <form method="post" action="<?= URLROOT ?>/cart/items">
 
                     <input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>">
-
-                    <input type="number" name="quantity" value="1" min="1">
-
                     <button class="add-cart-btn">
                         Add to Cart
                     </button>

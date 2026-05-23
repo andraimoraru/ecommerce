@@ -118,7 +118,9 @@ final class Product
                     LIMIT 1
                 ) AS primary_image
             FROM products p
+            LEFT JOIN inventory i ON i.product_id = p.id
             WHERE p.status = 'ACTIVE'
+              AND COALESCE(i.stock_on_hand, 0) > COALESCE(i.stock_reserved, 0)
             ORDER BY p.created_at DESC
             LIMIT :lim
             OFFSET :off
@@ -136,8 +138,10 @@ final class Product
     {
         $stmt = $this->pdo->query("
             SELECT COUNT(*)
-            FROM products
-            WHERE status = 'ACTIVE'
+            FROM products p
+            LEFT JOIN inventory i ON i.product_id = p.id
+            WHERE p.status = 'ACTIVE'
+              AND COALESCE(i.stock_on_hand, 0) > COALESCE(i.stock_reserved, 0)
         ");
 
         return (int)$stmt->fetchColumn();
@@ -149,6 +153,9 @@ final class Product
         $stmt = $this->pdo->prepare("
             SELECT
                 p.*,
+                COALESCE(i.stock_on_hand, 0) AS stock_on_hand,
+                COALESCE(i.stock_reserved, 0) AS stock_reserved,
+                GREATEST(COALESCE(i.stock_on_hand, 0) - COALESCE(i.stock_reserved, 0), 0) AS available_qty,
                 (
                     SELECT pi.url
                     FROM product_images pi
@@ -157,6 +164,7 @@ final class Product
                     LIMIT 1
                 ) AS primary_image
             FROM products p
+            LEFT JOIN inventory i ON i.product_id = p.id
             WHERE p.slug = :slug
             AND p.status = 'ACTIVE'
             LIMIT 1
@@ -427,8 +435,10 @@ final class Product
                 ) AS primary_image
             FROM products p
             INNER JOIN product_categories pc ON pc.product_id = p.id
+            LEFT JOIN inventory i ON i.product_id = p.id
             WHERE pc.category_id = :category_id
             AND p.status = 'ACTIVE'
+            AND COALESCE(i.stock_on_hand, 0) > COALESCE(i.stock_reserved, 0)
             ORDER BY p.created_at DESC
             LIMIT :lim
             OFFSET :off
@@ -449,8 +459,10 @@ final class Product
             SELECT COUNT(*)
             FROM products p
             INNER JOIN product_categories pc ON pc.product_id = p.id
+            LEFT JOIN inventory i ON i.product_id = p.id
             WHERE pc.category_id = :category_id
               AND p.status = 'ACTIVE'
+              AND COALESCE(i.stock_on_hand, 0) > COALESCE(i.stock_reserved, 0)
         ");
 
         $stmt->execute(['category_id' => $categoryId]);

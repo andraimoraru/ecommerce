@@ -227,9 +227,12 @@ final class Category
                     INNER JOIN products p2
                         ON p2.id = pc2.product_id
                        AND p2.status = 'ACTIVE'
+                    LEFT JOIN inventory i2
+                        ON i2.product_id = p2.id
                     INNER JOIN product_images pi
                         ON pi.product_id = p2.id
                     WHERE pc2.category_id = c.id
+                      AND COALESCE(i2.stock_on_hand, 0) > COALESCE(i2.stock_reserved, 0)
                       AND pi.id = (
                           SELECT pi2.id
                           FROM product_images pi2
@@ -243,7 +246,12 @@ final class Category
             FROM categories c
             LEFT JOIN product_categories pc ON pc.category_id = c.id
             LEFT JOIN products p ON p.id = pc.product_id AND p.status = 'ACTIVE'
+            LEFT JOIN inventory i ON i.product_id = p.id
             WHERE c.is_active = 1
+              AND (
+                  p.id IS NULL
+                  OR COALESCE(i.stock_on_hand, 0) > COALESCE(i.stock_reserved, 0)
+              )
             GROUP BY c.id, c.name, c.slug, c.parent_id
             ORDER BY c.name ASC
         ");

@@ -1,5 +1,6 @@
 <?php $product = $data['product'] ?? []; ?>
 <?php $images = $data['images'] ?? []; ?>
+<?php $availableQty = max(0, (int)($product['available_qty'] ?? 0)); ?>
 
 <div class="product-page">
     <div class="product-page-grid">
@@ -50,21 +51,27 @@
                 </p>
             <?php endif; ?>
 
-            <form method="post" action="<?= URLROOT ?>/cart/items" class="product-add-form">
-                <input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>">
+            <?php if ($availableQty > 0): ?>
+                <form method="post" action="<?= URLROOT ?>/cart/items" class="product-add-form">
+                    <input type="hidden" name="product_id" value="<?= (int)$product['id'] ?>">
 
-                <label for="quantity">Quantity</label><br>
-                <input
-                    id="quantity"
-                    type="number"
-                    name="quantity"
-                    min="1"
-                    value="1"
-                    class="qty-input"
-                ><br><br>
+                    <label for="quantity">Quantity</label><br>
+                    <input
+                        id="quantity"
+                        type="number"
+                        name="quantity"
+                        min="1"
+                        max="<?= $availableQty ?>"
+                        value="1"
+                        class="qty-input"
+                    >
+                    <p class="product-stock-note">In stock: <?= $availableQty ?></p>
 
-                <button type="submit" class="add-cart-btn">Add to cart</button>
-            </form>
+                    <button type="submit" class="add-cart-btn">Add to cart</button>
+                </form>
+            <?php else: ?>
+                <p class="product-stock-note product-stock-note--sold-out">Out of stock</p>
+            <?php endif; ?>
         </div>
     </div>
 

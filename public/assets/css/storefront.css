@@ -424,6 +424,17 @@ textarea{
     letter-spacing:0.08em;
 }
 
+.product-stock-note{
+    margin:10px 0 0;
+    color:var(--muted);
+    font-size:14px;
+}
+
+.product-stock-note--sold-out{
+    color:var(--danger);
+    font-weight:700;
+}
+
 .qty-input,
 input[type="number"],
 input[type="text"],
@@ -469,6 +480,14 @@ textarea{
     grid-template-columns:minmax(0, 2fr) minmax(300px, 1fr);
     gap:24px;
     align-items:start;
+}
+
+.cart-notice{
+    margin-bottom:20px;
+    padding:14px 16px;
+    border:1px solid var(--line-strong);
+    background:#fbf7ef;
+    color:var(--text);
 }
 
 .cart-main{

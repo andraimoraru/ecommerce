@@ -3,6 +3,11 @@
 <?php $cart = $data['cart'] ?? ['items' => [], 'total_minor' => 0]; ?>
 <?php $items = $cart['items'] ?? []; ?>
 <?php $totalMinor = (int)($cart['total_minor'] ?? 0); ?>
+<?php $notice = (string)($data['notice'] ?? ''); ?>
+
+<?php if ($notice !== ''): ?>
+    <div class="cart-notice"><?= htmlspecialchars($notice) ?></div>
+<?php endif; ?>
 
 <?php if (!$items): ?>
     <p>Your cart is empty.</p>
@@ -63,9 +68,11 @@
                                     type="number"
                                     name="quantity"
                                     min="1"
+                                    max="<?= max(1, (int)($item['available_qty'] ?? 1)) ?>"
                                     value="<?= (int)$item['qty'] ?>"
                                     class="qty-input qty-input--small"
                                 >
+                                <small class="item-copy">In stock: <?= (int)($item['available_qty'] ?? 0) ?></small><br>
                                 <button type="submit" class="small-btn">Update</button>
                             </form>
 

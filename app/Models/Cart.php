@@ -46,6 +46,8 @@ final class Cart
                 p.sku,
                 p.price_minor,
                 p.currency,
+                COALESCE(i.stock_on_hand, 0) AS stock_on_hand,
+                COALESCE(i.stock_reserved, 0) AS stock_reserved,
                 (
                     SELECT pi.url
                     FROM product_images pi
@@ -54,6 +56,7 @@ final class Cart
                     LIMIT 1
                 ) AS primary_image
             FROM products p
+            LEFT JOIN inventory i ON i.product_id = p.id
             WHERE p.id IN ($placeholders)
               AND p.status = 'ACTIVE'
         ");
@@ -70,11 +73,15 @@ final class Cart
 
         foreach ($products as $p) {
             $productId = (int)$p['id'];
-            $qty = (int)($cart[$productId] ?? 0);
+            $availableQty = max(0, (int)$p['stock_on_hand'] - (int)$p['stock_reserved']);
+            $qty = min((int)($cart[$productId] ?? 0), $availableQty);
 
             if ($qty <= 0) {
+                unset($_SESSION['cart'][$productId]);
                 continue;
             }
+
+            $_SESSION['cart'][$productId] = $qty;
 
             $lineTotal = ((int)$p['price_minor']) * $qty;
 
@@ -87,6 +94,7 @@ final class Cart
                 'price_minor' => (int)$p['price_minor'],
                 'currency' => (string)($p['currency'] ?? 'GBP'),
                 'primary_image' => $p['primary_image'] ?? null,
+                'available_qty' => $availableQty,
                 'line_total_minor' => $lineTotal,
             ];
 
@@ -97,6 +105,24 @@ final class Cart
             'items' => $items,
             'total_minor' => $totalMinor,
         ];
+    }
+
+    // Return the quantity currently available to sell for one product.
+    public function findAvailableQuantity(int $productId): int
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT GREATEST(COALESCE(i.stock_on_hand, 0) - COALESCE(i.stock_reserved, 0), 0)
+            FROM products p
+            LEFT JOIN inventory i ON i.product_id = p.id
+            WHERE p.id = :product_id
+              AND p.status = 'ACTIVE'
+            LIMIT 1
+        ");
+
+        $stmt->execute(['product_id' => $productId]);
+        $available = $stmt->fetchColumn();
+
+        return $available === false ? 0 : (int)$available;
     }
 
     // Remove all items from the session cart.
