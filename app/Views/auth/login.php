@@ -1,5 +1,3 @@
-<?php require APPROOT . '/Views/inc/header.php'; ?>
-
 <div class="auth-shell">
   <div class="auth-card">
     <h1 class="page-title"><?= htmlspecialchars($data['title'] ?? 'Login') ?></h1>
@@ -27,5 +25,3 @@
     <p>Don't have an account? <a href="<?= URLROOT ?>/register">Register</a></p>
   </div>
 </div>
-
-<?php require APPROOT . '/Views/inc/footer.php'; ?>

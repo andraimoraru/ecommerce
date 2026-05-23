@@ -11,11 +11,11 @@ final class Auth extends Controller
     // Render the registration form.
     public function registerForm(): void
     {
-        $this->view('auth/register', [
+        $this->render('auth/register', [
             'title' => 'Create account',
             'errors' => [],
             'old' => [],
-        ]);
+        ], 'main');
     }
 
     // Create a customer account and log the user in immediately.
@@ -39,11 +39,11 @@ final class Auth extends Controller
         }
 
         if ($errors) {
-            $this->view('auth/register', [
+            $this->render('auth/register', [
                 'title' => 'Create account',
                 'errors' => $errors,
                 'old' => $old,
-            ]);
+            ], 'main');
             return;
         }
 
@@ -71,11 +71,11 @@ final class Auth extends Controller
     // Render the login form.
     public function loginForm(): void
     {
-        $this->view('auth/login', [
+        $this->render('auth/login', [
             'title' => 'Login',
             'error' => null,
             'old' => [],
-        ]);
+        ], 'main');
     }
 
     // Authenticate a user and send them to the right area of the site.
@@ -85,11 +85,11 @@ final class Auth extends Controller
         $password = (string)($_POST['password'] ?? '');
 
         if ($email === '' || $password === '') {
-            $this->view('auth/login', [
+            $this->render('auth/login', [
                 'title' => 'Login',
                 'error' => 'Email and password are required.',
                 'old' => ['email' => $email],
-            ]);
+            ], 'main');
             return;
         }
 
@@ -98,11 +98,11 @@ final class Auth extends Controller
 
         // Generic error message (don’t leak which field is wrong)
         if (!$user || empty($user['is_active']) || empty($user['password_hash']) || !password_verify($password, $user['password_hash'])) {
-            $this->view('auth/login', [
+            $this->render('auth/login', [
                 'title' => 'Login',
                 'error' => 'Invalid credentials.',
                 'old' => ['email' => $email],
-            ]);
+            ], 'main');
             return;
         }
 

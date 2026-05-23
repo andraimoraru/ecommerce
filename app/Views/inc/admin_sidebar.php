@@ -18,6 +18,10 @@ Orders
 Customers
 </a>
 
+<a href="<?= URLROOT ?>">
+Home Store
+</a>
+
 <form action="<?= URLROOT ?>/logout" method="POST" class="sidebar__logout">
 <button class="sidebar__logout-button">
 Logout

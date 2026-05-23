@@ -1,5 +1,7 @@
-<?php require APPROOT . '/Views/inc/header.php'; ?>
+<section class="card">
+    <h1 class="page-title"><?= htmlspecialchars((string)($data['title'] ?? 'About Us')) ?></h1>
 
-<h1><?= htmlspecialchars($data['title'] ?? '', ENT_QUOTES, 'UTF-8'); ?></h1>
-
-<?php require APPROOT . '/Views/inc/footer.php'; ?>
+    <p class="section-copy">
+        Learn more about our brand, our jewellery collections, and the story behind the pieces we curate for everyday wear and gifting.
+    </p>
+</section>

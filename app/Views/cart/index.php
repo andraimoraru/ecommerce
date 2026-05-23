@@ -52,7 +52,7 @@
                         </p>
 
                         <p class="item-copy item-copy--spaced">
-                            Line total:
+                            Total:
                             <strong>
                                 <?= htmlspecialchars((string)($item['currency'] ?? 'GBP')) ?>
                                 <?= number_format(((int)$item['line_total_minor']) / 100, 2) ?>
