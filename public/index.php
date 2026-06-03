@@ -72,6 +72,10 @@ $router->get('/admin/customers/{id}/edit', 'Admin\\Customers@editForm', $adminMw
 $router->post('/admin/customers/{id}', 'Admin\\Customers@update', $adminMw);
 $router->post('/admin/customers/{id}/delete', 'Admin\\Customers@delete', $adminMw);
 
+$router->get('/admin/marketing', 'Admin\\Marketing@index', $adminMw);
+$router->get('/admin/marketing/social', 'Admin\\Marketing@social', $adminMw);
+$router->post('/admin/marketing/social', 'Admin\\Marketing@saveSocial', $adminMw);
+
 $router->get('/cart', 'Cart@index');
 $router->post('/cart/items', 'Cart@add');
 $router->post('/cart/update', 'Cart@update');

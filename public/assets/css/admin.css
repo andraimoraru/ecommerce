@@ -67,6 +67,7 @@ body.admin-body{
 .admin-content input[type="email"],
 .admin-content input[type="number"],
 .admin-content input[type="tel"],
+.admin-content input[type="url"],
 .admin-content input[type="password"],
 .admin-content select,
 .admin-content textarea{
@@ -95,6 +96,10 @@ body.admin-body{
     font-weight:700;
 }
 
+.text-danger{
+    color:var(--admin-danger);
+}
+
 .menu-toggle{
     display:none;
     padding:12px 16px;
@@ -109,6 +114,45 @@ body.admin-body{
     border:1px solid #e6e6e6;
     border-radius:12px;
     background:var(--admin-surface);
+}
+
+.flash{
+    margin-bottom:18px;
+    padding:14px 16px;
+    border:1px solid var(--admin-line);
+    border-radius:12px;
+    background:#ffffff;
+}
+
+.flash--success{
+    border-color:#cadecf;
+    background:#f4faf4;
+}
+
+.flash--error{
+    border-color:#e5cccc;
+    background:#fff6f6;
+}
+
+.flash--info{
+    border-color:#e3dac7;
+    background:#fcf8ef;
+}
+
+.flash__body{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+}
+
+.flash__title{
+    font-size:12px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+}
+
+.flash__message{
+    line-height:1.6;
 }
 
 .btn{

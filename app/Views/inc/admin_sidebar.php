@@ -18,6 +18,10 @@ Orders
 Customers
 </a>
 
+<a href="<?= URLROOT ?>/admin/marketing">
+Marketing
+</a>
+
 <a href="<?= URLROOT ?>">
 Home Store
 </a>
