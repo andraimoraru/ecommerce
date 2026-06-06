@@ -13,6 +13,9 @@ $router->get('/about', 'Pages@about');
 $router->get('/products', 'Products@index');
 $router->get('/products/{slug}', 'Products@show');
 
+$router->get('/blog', 'Blog@index');
+$router->get('/blog/{slug}', 'Blog@show');
+
 $router->get('/categories', 'Categories@index');
 $router->get('/categories/{slug}', 'Categories@show');
 
@@ -75,6 +78,15 @@ $router->post('/admin/customers/{id}/delete', 'Admin\\Customers@delete', $adminM
 $router->get('/admin/marketing', 'Admin\\Marketing@index', $adminMw);
 $router->get('/admin/marketing/social', 'Admin\\Marketing@social', $adminMw);
 $router->post('/admin/marketing/social', 'Admin\\Marketing@saveSocial', $adminMw);
+
+$router->get('/admin/blog', 'Admin\\Blog@index', $adminMw);
+$router->get('/admin/blog/create', 'Admin\\Blog@createForm', $adminMw);
+$router->post('/admin/blog/store', 'Admin\\Blog@store', $adminMw);
+$router->get('/admin/blog/{id}/edit', 'Admin\\Blog@editForm', $adminMw);
+$router->post('/admin/blog/{id}/update', 'Admin\\Blog@update', $adminMw);
+$router->post('/admin/blog/{id}/publish', 'Admin\\Blog@publish', $adminMw);
+$router->post('/admin/blog/{id}/draft', 'Admin\\Blog@draft', $adminMw);
+$router->post('/admin/blog/{id}/delete', 'Admin\\Blog@delete', $adminMw);
 
 $router->get('/cart', 'Cart@index');
 $router->post('/cart/items', 'Cart@add');

@@ -22,6 +22,10 @@ Customers
 Marketing
 </a>
 
+<a href="<?= URLROOT ?>/admin/blog">
+Blog
+</a>
+
 <a href="<?= URLROOT ?>">
 Home Store
 </a>
