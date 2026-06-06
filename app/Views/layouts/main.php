@@ -1,5 +1,6 @@
 <?php
 $pageTitle = $data['title'] ?? SITENAME;
+$metaDescription = trim((string)($data['meta_description'] ?? ''));
 $pageStyles = $data['styles'] ?? [];
 $bodyClass = $data['body_class'] ?? '';
 $cartCount = 0;
@@ -22,6 +23,9 @@ if (!empty($_SESSION['user_id'])) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title><?= htmlspecialchars((string)$pageTitle) ?></title>
+<?php if ($metaDescription !== ''): ?>
+    <meta name="description" content="<?= htmlspecialchars($metaDescription) ?>">
+<?php endif; ?>
 <link rel="stylesheet" href="<?= URLROOT ?>/assets/css/storefront.css">
 <?php foreach ($pageStyles as $style): ?>
     <link rel="stylesheet" href="<?= URLROOT ?>/assets/css/<?= htmlspecialchars((string)$style) ?>.css">
@@ -75,6 +79,7 @@ if (!empty($_SESSION['user_id'])) {
 </header>
 
 <main class="page-shell">
+    <?php require APPROOT . '/Views/inc/flash.php'; ?>
     <?= $content ?>
 </main>
 
