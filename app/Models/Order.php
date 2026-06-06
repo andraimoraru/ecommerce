@@ -347,6 +347,65 @@ final class Order
     }
 
     /** @return array<int, array<string,mixed>> */
+    // Fetch orders that belong to one customer for the account area.
+    public function findForUser(int $userId): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                id,
+                order_number,
+                status,
+                currency,
+                total_minor,
+                placed_at,
+                created_at
+            FROM orders
+            WHERE user_id = :user_id
+            ORDER BY COALESCE(placed_at, created_at) DESC, id DESC
+        ");
+
+        $stmt->execute(['user_id' => $userId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Fetch one order only when it belongs to the logged-in customer.
+    public function findForUserById(int $orderId, int $userId): ?array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT
+                id,
+                order_number,
+                status,
+                currency,
+                subtotal_minor,
+                shipping_minor,
+                tax_minor,
+                discount_minor,
+                total_minor,
+                customer_email,
+                customer_first_name,
+                customer_last_name,
+                customer_phone,
+                placed_at,
+                created_at
+            FROM orders
+            WHERE id = :id
+              AND user_id = :user_id
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            'id' => $orderId,
+            'user_id' => $userId,
+        ]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $row ?: null;
+    }
+
+    /** @return array<int, array<string,mixed>> */
     // Fetch every line item for a given order.
     public function findItemsByOrderId(int $orderId): array
     {

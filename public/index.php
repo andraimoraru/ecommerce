@@ -31,6 +31,12 @@ $router->post('/logout', 'Auth@logout');
 $router->get('/account', 'Account\\Dashboard@index', [
     \App\Core\Middleware\AuthMiddleware::class
 ]);
+$router->get('/account/orders', 'Account\\Dashboard@orders', [
+    \App\Core\Middleware\AuthMiddleware::class
+]);
+$router->get('/account/orders/{id}', 'Account\\Dashboard@showOrder', [
+    \App\Core\Middleware\AuthMiddleware::class
+]);
 
 // Admin (protected)
 $adminMw = [
