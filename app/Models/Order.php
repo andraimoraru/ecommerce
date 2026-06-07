@@ -361,6 +361,7 @@ final class Order
                 created_at
             FROM orders
             WHERE user_id = :user_id
+              AND status != 'PENDING_PAYMENT'
             ORDER BY COALESCE(placed_at, created_at) DESC, id DESC
         ");
 
@@ -392,6 +393,7 @@ final class Order
             FROM orders
             WHERE id = :id
               AND user_id = :user_id
+              AND status != 'PENDING_PAYMENT'
             LIMIT 1
         ");
 

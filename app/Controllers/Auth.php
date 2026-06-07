@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Models\Cart;
 use App\Models\User;
 
 final class Auth extends Controller
@@ -60,6 +61,7 @@ final class Auth extends Controller
         $_SESSION['user_id'] = $userId;
         $_SESSION['user_role'] = 'CUSTOMER';
         $_SESSION['user_name'] = $old['first_name'];
+        (new Cart())->mergeUserCartIntoSession($userId);
 
         $redirect = $_SESSION['redirect_after_login'] ?? (URLROOT . '/account');
         unset($_SESSION['redirect_after_login']);
@@ -110,6 +112,10 @@ final class Auth extends Controller
         $_SESSION['user_id'] = (int)$user['id'];
         $_SESSION['user_role'] = $user['role']; // 'CUSTOMER' or 'ADMIN'
         $_SESSION['user_name'] = $user['first_name'];
+
+        if ($user['role'] === 'CUSTOMER') {
+            (new Cart())->mergeUserCartIntoSession((int)$user['id']);
+        }
 
         $redirect = $_SESSION['redirect_after_login'] ?? null;
         unset($_SESSION['redirect_after_login']);

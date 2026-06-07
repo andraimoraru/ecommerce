@@ -8,23 +8,23 @@ use App\Models\Cart as CartModel;
 
 final class Cart extends Controller
 {
-    // Store a one-time cart notice for the next page load.
-    private function setNotice(string $message): void
+    // Store a one-time flash message for the next page load.
+    private function setFlash(string $type, string $message): void
     {
-        $_SESSION['cart_notice'] = $message;
+        $_SESSION['flash'] = [
+            'type' => $type,
+            'message' => $message,
+        ];
     }
 
     // Render the current session cart.
     public function index(): void
     {
         $cart = (new CartModel())->getFull();
-        $notice = (string)($_SESSION['cart_notice'] ?? '');
-        unset($_SESSION['cart_notice']);
 
         $data = [
             'title' => 'Your Cart',
             'cart' => $cart,
-            'notice' => $notice,
         ];
 
         $this->render('cart/index', $data, 'main');
@@ -53,7 +53,7 @@ final class Cart extends Controller
         $availableQty = $cartModel->findAvailableQuantity($productId);
 
         if ($availableQty <= 0) {
-            $this->setNotice('This product is currently out of stock.');
+            $this->setFlash('error', 'Sorry, this item is currently out of stock.');
             header('Location: ' . URLROOT . '/cart');
             exit;
         }
@@ -63,8 +63,10 @@ final class Cart extends Controller
         $_SESSION['cart'][$productId] = $finalQty;
 
         if ($finalQty < $requestedQty) {
-            $this->setNotice('Cart quantity was limited to the available stock for this product.');
+            $this->setFlash('info', 'We added as many as we could. Your cart has been adjusted to the available stock.');
         }
+
+        $cartModel->saveSessionForCurrentUser();
 
         header('Location: ' . URLROOT . '/cart');
         exit;
@@ -85,17 +87,19 @@ final class Cart extends Controller
 
                 if ($availableQty <= 0) {
                     unset($_SESSION['cart'][$productId]);
-                    $this->setNotice('This product is currently out of stock and was removed from your cart.');
+                    $this->setFlash('error', 'This item is no longer in stock, so it has been removed from your cart.');
                 } else {
                     $finalQty = min($quantity, $availableQty);
                     $_SESSION['cart'][$productId] = $finalQty;
 
                     if ($finalQty < $quantity) {
-                        $this->setNotice('Cart quantity was reduced to match the available stock.');
+                        $this->setFlash('info', 'We updated your cart to match the quantity currently in stock.');
                     }
                 }
             }
         }
+
+        $cartModel->saveSessionForCurrentUser();
 
         header('Location: ' . URLROOT . '/cart');
         exit;
@@ -109,6 +113,8 @@ final class Cart extends Controller
         if ($productId > 0 && isset($_SESSION['cart'][$productId])) {
             unset($_SESSION['cart'][$productId]);
         }
+
+        (new CartModel())->saveSessionForCurrentUser();
 
         header('Location: ' . URLROOT . '/cart');
         exit;
