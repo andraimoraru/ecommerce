@@ -93,6 +93,24 @@ final class OrderPayment
         ]);
     }
 
+    // Return the order already created for a Stripe Checkout Session, if any.
+    public function findOrderIdByCheckoutSessionId(string $checkoutSessionId): ?int
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT order_id
+            FROM order_payments
+            WHERE provider = 'STRIPE'
+              AND stripe_checkout_session_id = :stripe_checkout_session_id
+            ORDER BY id DESC
+            LIMIT 1
+        ");
+
+        $stmt->execute(['stripe_checkout_session_id' => $checkoutSessionId]);
+        $orderId = $stmt->fetchColumn();
+
+        return $orderId === false ? null : (int)$orderId;
+    }
+
     // Find the current Stripe payment row for an order.
     private function findStripePayment(int $orderId): ?array
     {

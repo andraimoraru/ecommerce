@@ -7,6 +7,7 @@ use App\Core\Controller;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Address;
+use App\Models\OrderPayment;
 use App\Services\StripeGateway;
 use RuntimeException;
 
@@ -84,7 +85,7 @@ final class Checkout extends Controller
 
     }
 
-    // Validate checkout input, create the order, and clear the cart.
+    // Validate checkout input and start Stripe Checkout without creating an order yet.
     public function store(): void
     {
         $cartModel = new Cart();
@@ -158,11 +159,11 @@ final class Checkout extends Controller
             ];
         }, $items);
 
-        $orderModel = new Order();
+        $checkoutReference = 'checkout_' . bin2hex(random_bytes(12));
         $orderData = [
-            'order_number' => $orderModel->nextOrderNumber(),
+            'order_number' => $checkoutReference,
             'user_id' => $_SESSION['user_id'] ?? null,
-            'status' => 'PENDING_PAYMENT',
+            'status' => 'PAID',
             'currency' => 'GBP',
             'subtotal_minor' => $subtotalMinor,
             'shipping_minor' => $shippingMinor,
@@ -175,38 +176,48 @@ final class Checkout extends Controller
             'customer_phone' => $old['shipping_phone'] ?: null,
         ];
 
-        $orderId = $orderModel->createFull($orderData, $mappedItems, $shipping, $billing);
         $stripe = new StripeGateway();
 
         try {
             $checkoutSession = $stripe->createCheckoutSession(
-                array_merge($orderData, ['id' => $orderId]),
+                array_merge($orderData, ['id' => $checkoutReference]),
                 $mappedItems,
                 URLROOT . '/checkout/success?session_id={CHECKOUT_SESSION_ID}',
-                URLROOT . '/checkout/cancel?order_id=' . $orderId,
+                URLROOT . '/checkout/cancel',
                 $old['shipping_email']
             );
         } catch (RuntimeException $exception) {
-            $orderModel->updateStatus($orderId, 'CANCELLED');
             $errors['payment'] = $exception->getMessage();
             $this->renderCheckout($cart, $errors, $old);
             return;
         }
 
         $checkoutUrl = (string)($checkoutSession['url'] ?? '');
+        $checkoutSessionId = (string)($checkoutSession['id'] ?? '');
+
         if ($checkoutUrl === '') {
-            $orderModel->updateStatus($orderId, 'CANCELLED');
             $errors['payment'] = 'Stripe did not return a checkout URL.';
             $this->renderCheckout($cart, $errors, $old);
             return;
         }
 
-        $_SESSION['last_order_id'] = $orderId;
-        $_SESSION['pending_checkout_save_address'] = [
-            'enabled' => !empty($_SESSION['user_id']) && !empty($old['save_address']),
-            'billing_same_as_shipping' => $billingSame,
-            'shipping_email' => $old['shipping_email'],
+        if ($checkoutSessionId === '') {
+            $errors['payment'] = 'Stripe did not return a checkout session id.';
+            $this->renderCheckout($cart, $errors, $old);
+            return;
+        }
+
+        $_SESSION['pending_checkout_sessions'][$checkoutSessionId] = [
+            'order_data' => $orderData,
+            'items' => $mappedItems,
             'shipping' => $shipping,
+            'billing' => $billing,
+            'save_address' => [
+                'enabled' => !empty($_SESSION['user_id']) && !empty($old['save_address']),
+                'billing_same_as_shipping' => $billingSame,
+                'shipping_email' => $old['shipping_email'],
+                'shipping' => $shipping,
+            ],
         ];
 
         header('Location: ' . $checkoutUrl);
@@ -220,6 +231,13 @@ final class Checkout extends Controller
         $orderId = 0;
 
         if ($sessionId !== '') {
+            $orderPaymentModel = new OrderPayment();
+            $existingOrderId = $orderPaymentModel->findOrderIdByCheckoutSessionId($sessionId);
+
+            if ($existingOrderId !== null) {
+                $orderId = $existingOrderId;
+            }
+
             try {
                 $session = (new StripeGateway())->retrieveCheckoutSession($sessionId);
             } catch (RuntimeException $exception) {
@@ -228,36 +246,61 @@ final class Checkout extends Controller
                 return;
             }
 
-            $orderId = (int)($session['metadata']['order_id'] ?? $session['client_reference_id'] ?? 0);
             $paymentStatus = (string)($session['payment_status'] ?? '');
             $amountTotal = (int)($session['amount_total'] ?? 0);
             $currency = strtoupper((string)($session['currency'] ?? ''));
 
-            $orderModel = new Order();
-            $order = $orderModel->findSummaryById($orderId);
-            if (!$order) {
-                http_response_code(404);
-                echo 'Order not found';
-                return;
-            }
-
             if ($paymentStatus !== 'paid') {
-                header('Location: ' . URLROOT . '/checkout/cancel?order_id=' . $orderId);
+                header('Location: ' . URLROOT . '/checkout/cancel');
                 exit;
             }
 
-            if ($amountTotal !== (int)$order['total_minor'] || $currency !== strtoupper((string)$order['currency'])) {
-                http_response_code(422);
-                echo 'Stripe payment total does not match the order.';
-                return;
-            }
+            if ($orderId <= 0) {
+                $pendingSessions = $_SESSION['pending_checkout_sessions'] ?? [];
+                $pending = is_array($pendingSessions) ? ($pendingSessions[$sessionId] ?? null) : null;
 
-            $orderModel->updateStatus($orderId, 'PAID');
-            $this->saveCheckoutAddressIfRequested();
-            $cartModel = new Cart();
-            $cartModel->clear();
-        } else {
-            $orderId = (int)($_SESSION['last_order_id'] ?? 0);
+                if (!is_array($pending)) {
+                    http_response_code(400);
+                    echo 'This paid checkout session could not be matched to your basket. Please contact us with your Stripe payment reference.';
+                    return;
+                }
+
+                $orderData = $pending['order_data'] ?? [];
+                $mappedItems = $pending['items'] ?? [];
+                $shipping = $pending['shipping'] ?? [];
+                $billing = $pending['billing'] ?? [];
+
+                if (!is_array($orderData) || !is_array($mappedItems) || !is_array($shipping) || !is_array($billing)) {
+                    http_response_code(400);
+                    echo 'Checkout details are incomplete.';
+                    return;
+                }
+
+                if ($amountTotal !== (int)$orderData['total_minor'] || $currency !== strtoupper((string)$orderData['currency'])) {
+                    http_response_code(422);
+                    echo 'Stripe payment total does not match the checkout total.';
+                    return;
+                }
+
+                $orderModel = new Order();
+                $orderData['order_number'] = $orderModel->nextOrderNumber();
+                $orderData['status'] = 'PAID';
+                $orderId = $orderModel->createFull($orderData, $mappedItems, $shipping, $billing);
+
+                $paymentIntentId = !empty($session['payment_intent']) ? (string)$session['payment_intent'] : null;
+                $orderPaymentModel->upsertStripePayment(
+                    $orderId,
+                    'SUCCEEDED',
+                    $amountTotal,
+                    $currency,
+                    $sessionId,
+                    $paymentIntentId
+                );
+
+                $this->saveCheckoutAddressIfRequested($pending['save_address'] ?? null);
+                (new Cart())->clear();
+                unset($_SESSION['pending_checkout_sessions'][$sessionId]);
+            }
         }
 
         if ($orderId <= 0) {
@@ -282,11 +325,6 @@ final class Checkout extends Controller
     // Show a simple return screen when Stripe Checkout is cancelled.
     public function cancel(): void
     {
-        $orderId = (int)($_GET['order_id'] ?? 0);
-        if ($orderId > 0) {
-            (new Order())->updateStatus($orderId, 'CANCELLED');
-        }
-
         $this->render('checkout/cancel', [
             'title' => 'Payment cancelled',
         ], 'main');
@@ -418,9 +456,10 @@ final class Checkout extends Controller
     }
 
     // Persist the optional saved address only after a confirmed payment.
-    private function saveCheckoutAddressIfRequested(): void
+    private function saveCheckoutAddressIfRequested(?array $state = null): void
     {
-        $state = $_SESSION['pending_checkout_save_address'] ?? null;
+        $state ??= $_SESSION['pending_checkout_save_address'] ?? null;
+
         if (!is_array($state) || empty($state['enabled']) || empty($_SESSION['user_id'])) {
             return;
         }
