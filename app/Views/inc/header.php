@@ -60,7 +60,14 @@ if (!empty($_SESSION['user_id'])) {
         </a>
     </div>
 
-    <button class="menu-toggle" type="button" data-menu-toggle>Menu</button>
+    <button class="menu-toggle" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu" data-menu-toggle>
+        <span class="hamburger" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+        </span>
+        <span class="sr-only">Open menu</span>
+    </button>
     </div>
     <div id="mobileMenu" class="mobile-nav">
     <a href="<?= URLROOT ?>/products">Search</a>

@@ -22,7 +22,7 @@
 
         <div class="cart-main">
 
-            <div class="cart-card">
+            <div class="cart-card checkout-summary-card">
                 <h2>Order Summary</h2>
 
                 <?php foreach ($items as $item): ?>
@@ -67,52 +67,52 @@
 
                     <div>
                         <label>First Name</label><br>
-                        <input name="shipping_first_name" value="<?= htmlspecialchars((string)($old['shipping_first_name'] ?? '')) ?>">
+                        <input name="shipping_first_name" autocomplete="shipping given-name" value="<?= htmlspecialchars((string)($old['shipping_first_name'] ?? '')) ?>">
                         <?php if (!empty($errors['shipping_first_name'])): ?><p class="text-danger"><?= htmlspecialchars($errors['shipping_first_name']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Last Name</label><br>
-                        <input name="shipping_last_name" value="<?= htmlspecialchars((string)($old['shipping_last_name'] ?? '')) ?>">
+                        <input name="shipping_last_name" autocomplete="shipping family-name" value="<?= htmlspecialchars((string)($old['shipping_last_name'] ?? '')) ?>">
                         <?php if (!empty($errors['shipping_last_name'])): ?><p class="text-danger"><?= htmlspecialchars($errors['shipping_last_name']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Email</label><br>
-                        <input name="shipping_email" value="<?= htmlspecialchars((string)($old['shipping_email'] ?? '')) ?>">
+                        <input type="email" name="shipping_email" autocomplete="shipping email" inputmode="email" value="<?= htmlspecialchars((string)($old['shipping_email'] ?? '')) ?>">
                         <?php if (!empty($errors['shipping_email'])): ?><p class="text-danger"><?= htmlspecialchars($errors['shipping_email']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Phone</label><br>
-                        <input name="shipping_phone" value="<?= htmlspecialchars((string)($old['shipping_phone'] ?? '')) ?>">
+                        <input type="tel" name="shipping_phone" autocomplete="shipping tel" inputmode="tel" value="<?= htmlspecialchars((string)($old['shipping_phone'] ?? '')) ?>">
                     </div>
 
                     <div class="checkout-field-full">
                         <label>Address line 1</label><br>
-                        <input name="shipping_line1" value="<?= htmlspecialchars((string)($old['shipping_line1'] ?? '')) ?>">
+                        <input name="shipping_line1" autocomplete="shipping address-line1" value="<?= htmlspecialchars((string)($old['shipping_line1'] ?? '')) ?>">
                         <?php if (!empty($errors['shipping_line1'])): ?><p class="text-danger"><?= htmlspecialchars($errors['shipping_line1']) ?></p><?php endif; ?>
                     </div>
 
                     <div class="checkout-field-full">
                         <label>Address line 2</label><br>
-                        <input name="shipping_line2" value="<?= htmlspecialchars((string)($old['shipping_line2'] ?? '')) ?>">
+                        <input name="shipping_line2" autocomplete="shipping address-line2" value="<?= htmlspecialchars((string)($old['shipping_line2'] ?? '')) ?>">
                     </div>
 
                     <div>
                         <label>City</label><br>
-                        <input name="shipping_city" value="<?= htmlspecialchars((string)($old['shipping_city'] ?? '')) ?>">
+                        <input name="shipping_city" autocomplete="shipping address-level2" value="<?= htmlspecialchars((string)($old['shipping_city'] ?? '')) ?>">
                         <?php if (!empty($errors['shipping_city'])): ?><p class="text-danger"><?= htmlspecialchars($errors['shipping_city']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Region</label><br>
-                        <input name="shipping_region" value="<?= htmlspecialchars((string)($old['shipping_region'] ?? '')) ?>">
+                        <input name="shipping_region" autocomplete="shipping address-level1" value="<?= htmlspecialchars((string)($old['shipping_region'] ?? '')) ?>">
                     </div>
 
                     <div>
                         <label>Postcode</label><br>
-                        <input name="shipping_postcode" value="<?= htmlspecialchars((string)($old['shipping_postcode'] ?? '')) ?>">
+                        <input name="shipping_postcode" autocomplete="shipping postal-code" value="<?= htmlspecialchars((string)($old['shipping_postcode'] ?? '')) ?>">
                         <?php if (!empty($errors['shipping_postcode'])): ?><p class="text-danger"><?= htmlspecialchars($errors['shipping_postcode']) ?></p><?php endif; ?>
                     </div>
 
@@ -120,6 +120,7 @@
                         <label>Country</label><br>
                         <input
                             name="shipping_country"
+                            autocomplete="shipping country-name"
                             value="<?= htmlspecialchars((string)($old['shipping_country'] ?? '')) ?>"
                             placeholder="United Kingdom"
                             data-shipping-country
@@ -131,7 +132,7 @@
                 </div>
 
                 <div class="stack-md">
-                    <label>
+                    <label class="checkout-option">
                         <input
                             type="checkbox"
                             name="billing_same_as_shipping"
@@ -145,7 +146,7 @@
 
                 <?php if (!empty($_SESSION['user_id'])): ?>
                     <div class="stack-sm">
-                        <label>
+                        <label class="checkout-option">
                             <input
                                 type="checkbox"
                                 name="save_address"
@@ -165,58 +166,58 @@
 
                     <div>
                         <label>First Name</label><br>
-                        <input name="billing_first_name" value="<?= htmlspecialchars((string)($old['billing_first_name'] ?? '')) ?>">
+                        <input name="billing_first_name" autocomplete="billing given-name" value="<?= htmlspecialchars((string)($old['billing_first_name'] ?? '')) ?>">
                         <?php if (!empty($errors['billing_first_name'])): ?><p class="text-danger"><?= htmlspecialchars($errors['billing_first_name']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Last Name</label><br>
-                        <input name="billing_last_name" value="<?= htmlspecialchars((string)($old['billing_last_name'] ?? '')) ?>">
+                        <input name="billing_last_name" autocomplete="billing family-name" value="<?= htmlspecialchars((string)($old['billing_last_name'] ?? '')) ?>">
                         <?php if (!empty($errors['billing_last_name'])): ?><p class="text-danger"><?= htmlspecialchars($errors['billing_last_name']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Email</label><br>
-                        <input name="billing_email" value="<?= htmlspecialchars((string)($old['billing_email'] ?? '')) ?>">
+                        <input type="email" name="billing_email" autocomplete="billing email" inputmode="email" value="<?= htmlspecialchars((string)($old['billing_email'] ?? '')) ?>">
                         <?php if (!empty($errors['billing_email'])): ?><p class="text-danger"><?= htmlspecialchars($errors['billing_email']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Phone</label><br>
-                        <input name="billing_phone" value="<?= htmlspecialchars((string)($old['billing_phone'] ?? '')) ?>">
+                        <input type="tel" name="billing_phone" autocomplete="billing tel" inputmode="tel" value="<?= htmlspecialchars((string)($old['billing_phone'] ?? '')) ?>">
                     </div>
 
                     <div class="checkout-field-full">
                         <label>Address line 1</label><br>
-                        <input name="billing_line1" value="<?= htmlspecialchars((string)($old['billing_line1'] ?? '')) ?>">
+                        <input name="billing_line1" autocomplete="billing address-line1" value="<?= htmlspecialchars((string)($old['billing_line1'] ?? '')) ?>">
                         <?php if (!empty($errors['billing_line1'])): ?><p class="text-danger"><?= htmlspecialchars($errors['billing_line1']) ?></p><?php endif; ?>
                     </div>
 
                     <div class="checkout-field-full">
                         <label>Address line 2</label><br>
-                        <input name="billing_line2" value="<?= htmlspecialchars((string)($old['billing_line2'] ?? '')) ?>">
+                        <input name="billing_line2" autocomplete="billing address-line2" value="<?= htmlspecialchars((string)($old['billing_line2'] ?? '')) ?>">
                     </div>
 
                     <div>
                         <label>City</label><br>
-                        <input name="billing_city" value="<?= htmlspecialchars((string)($old['billing_city'] ?? '')) ?>">
+                        <input name="billing_city" autocomplete="billing address-level2" value="<?= htmlspecialchars((string)($old['billing_city'] ?? '')) ?>">
                         <?php if (!empty($errors['billing_city'])): ?><p class="text-danger"><?= htmlspecialchars($errors['billing_city']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Region</label><br>
-                        <input name="billing_region" value="<?= htmlspecialchars((string)($old['billing_region'] ?? '')) ?>">
+                        <input name="billing_region" autocomplete="billing address-level1" value="<?= htmlspecialchars((string)($old['billing_region'] ?? '')) ?>">
                     </div>
 
                     <div>
                         <label>Postcode</label><br>
-                        <input name="billing_postcode" value="<?= htmlspecialchars((string)($old['billing_postcode'] ?? '')) ?>">
+                        <input name="billing_postcode" autocomplete="billing postal-code" value="<?= htmlspecialchars((string)($old['billing_postcode'] ?? '')) ?>">
                         <?php if (!empty($errors['billing_postcode'])): ?><p class="text-danger"><?= htmlspecialchars($errors['billing_postcode']) ?></p><?php endif; ?>
                     </div>
 
                     <div>
                         <label>Country</label><br>
-                        <input name="billing_country" value="<?= htmlspecialchars((string)($old['billing_country'] ?? '')) ?>">
+                        <input name="billing_country" autocomplete="billing country-name" value="<?= htmlspecialchars((string)($old['billing_country'] ?? '')) ?>">
                         <?php if (!empty($errors['billing_country'])): ?><p class="text-danger"><?= htmlspecialchars($errors['billing_country']) ?></p><?php endif; ?>
                     </div>
 

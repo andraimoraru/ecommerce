@@ -1,6 +1,10 @@
-<div class="sidebar">
+<div class="sidebar" id="adminSidebar">
 
 <h2>Admin</h2>
+
+<a href="<?= URLROOT ?>/admin">
+Dashboard
+</a>
 
 <a href="<?= URLROOT ?>/admin/products">
 Products

@@ -10,6 +10,7 @@ function storefrontToggleMenu() {
 
     if (button) {
         button.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        button.setAttribute('aria-label', isOpen ? 'Close menu' : 'Open menu');
     }
 }
 
@@ -25,6 +26,8 @@ function storefrontToggleBillingCard() {
 }
 
 function storefrontBindConfirmForms(root = document) {
+    const modal = storefrontCreateConfirmModal();
+
     root.querySelectorAll('form[data-confirm]').forEach((form) => {
         if (form.dataset.confirmBound === '1') {
             return;
@@ -32,11 +35,100 @@ function storefrontBindConfirmForms(root = document) {
 
         form.dataset.confirmBound = '1';
         form.addEventListener('submit', (event) => {
-            if (!window.confirm(form.dataset.confirm || 'Are you sure?')) {
-                event.preventDefault();
+            if (form.dataset.confirmApproved === '1') {
+                delete form.dataset.confirmApproved;
+                return;
             }
+
+            event.preventDefault();
+            storefrontOpenConfirmModal(modal, form);
         });
     });
+}
+
+function storefrontCreateConfirmModal() {
+    let modal = document.querySelector('[data-confirm-modal]');
+
+    if (modal) {
+        return modal;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'confirm-modal';
+    modal.hidden = true;
+    modal.dataset.confirmModal = '1';
+    modal.innerHTML = `
+        <div class="confirm-modal__overlay" data-confirm-cancel></div>
+        <section
+            class="confirm-modal__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="confirmModalTitle"
+            aria-describedby="confirmModalMessage"
+        >
+            <p class="confirm-modal__eyebrow">Cart update</p>
+            <h2 id="confirmModalTitle" class="confirm-modal__title">Remove item?</h2>
+            <p id="confirmModalMessage" class="confirm-modal__message"></p>
+            <div class="confirm-modal__actions">
+                <button type="button" class="btn secondary confirm-modal__button" data-confirm-cancel>Keep item</button>
+                <button type="button" class="btn danger confirm-modal__button" data-confirm-approve>Remove item</button>
+            </div>
+        </section>
+    `;
+
+    document.body.appendChild(modal);
+
+    modal.querySelectorAll('[data-confirm-cancel]').forEach((button) => {
+        button.addEventListener('click', () => storefrontCloseConfirmModal(modal));
+    });
+
+    modal.querySelector('[data-confirm-approve]')?.addEventListener('click', () => {
+        const form = modal.confirmForm;
+
+        if (!form) {
+            storefrontCloseConfirmModal(modal);
+            return;
+        }
+
+        form.dataset.confirmApproved = '1';
+        storefrontCloseConfirmModal(modal);
+        form.requestSubmit();
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !modal.hidden) {
+            storefrontCloseConfirmModal(modal);
+        }
+    });
+
+    return modal;
+}
+
+function storefrontOpenConfirmModal(modal, form) {
+    const message = form.dataset.confirm || 'Are you sure you want to continue?';
+    const messageNode = modal.querySelector('#confirmModalMessage');
+
+    if (messageNode) {
+        messageNode.textContent = message;
+    }
+
+    modal.confirmForm = form;
+    modal.previousFocus = document.activeElement;
+    modal.hidden = false;
+    document.body.classList.add('has-confirm-modal');
+    modal.querySelector('[data-confirm-cancel]')?.focus();
+}
+
+function storefrontCloseConfirmModal(modal) {
+    modal.hidden = true;
+    document.body.classList.remove('has-confirm-modal');
+
+    if (modal.previousFocus && typeof modal.previousFocus.focus === 'function') {
+        modal.previousFocus.focus();
+    }
+
+    modal.confirmForm = null;
+    modal.previousFocus = null;
 }
 
 function storefrontNormalizeCountry(country) {
@@ -96,6 +188,35 @@ function storefrontBindCheckoutShippingEstimate() {
     render();
 }
 
+function storefrontBindProductGallery() {
+    const mainImage = document.querySelector('[data-product-main-image]');
+    const thumbnails = document.querySelectorAll('[data-product-thumb]');
+
+    if (!mainImage || thumbnails.length === 0) {
+        return;
+    }
+
+    thumbnails.forEach((thumbnail) => {
+        thumbnail.addEventListener('click', () => {
+            const imageSrc = thumbnail.dataset.imageSrc || '';
+            const imageAlt = thumbnail.dataset.imageAlt || '';
+
+            if (imageSrc === '') {
+                return;
+            }
+
+            mainImage.src = imageSrc;
+            mainImage.alt = imageAlt;
+
+            thumbnails.forEach((item) => {
+                const isSelected = item === thumbnail;
+                item.classList.toggle('is-active', isSelected);
+                item.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+            });
+        });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-menu-toggle]').forEach((button) => {
         button.addEventListener('click', storefrontToggleMenu);
@@ -108,4 +229,5 @@ document.addEventListener('DOMContentLoaded', () => {
     storefrontToggleBillingCard();
     storefrontBindConfirmForms();
     storefrontBindCheckoutShippingEstimate();
+    storefrontBindProductGallery();
 });
