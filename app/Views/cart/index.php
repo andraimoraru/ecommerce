@@ -3,11 +3,6 @@
 <?php $cart = $data['cart'] ?? ['items' => [], 'total_minor' => 0]; ?>
 <?php $items = $cart['items'] ?? []; ?>
 <?php $totalMinor = (int)($cart['total_minor'] ?? 0); ?>
-<?php $notice = (string)($data['notice'] ?? ''); ?>
-
-<?php if ($notice !== ''): ?>
-    <div class="cart-notice"><?= htmlspecialchars($notice) ?></div>
-<?php endif; ?>
 
 <?php if (!$items): ?>
     <p>Your cart is empty.</p>
@@ -76,9 +71,9 @@
                                 <button type="submit" class="small-btn">Update</button>
                             </form>
 
-                            <form method="post" action="<?= URLROOT ?>/cart/remove" data-confirm="Remove this item from cart?">
+                            <form method="post" action="<?= URLROOT ?>/cart/remove" data-confirm="This item will be removed from your cart. You can add it again later if you change your mind.">
                                 <input type="hidden" name="product_id" value="<?= (int)$item['product_id'] ?>">
-                                <button type="submit" class="small-btn danger-btn">Remove</button>
+                                <button type="submit" class="small-btn danger-btn" aria-label="Remove <?= htmlspecialchars((string)$item['name']) ?> from your cart">Remove</button>
                             </form>
 
                         </div>

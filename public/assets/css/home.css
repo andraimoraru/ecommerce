@@ -331,6 +331,10 @@
     .home-hero__points{
         grid-template-columns:1fr;
     }
+
+    .home-page{
+        gap:44px;
+    }
 }
 
 @media (max-width: 720px){
@@ -364,5 +368,71 @@
     .home-hero__card--tertiary{
         width:138px;
         height:170px;
+    }
+}
+
+@media (max-width: 520px){
+    .home-page{
+        gap:34px;
+    }
+
+    .home-hero__content,
+    .home-categories,
+    .home-ambassador__content,
+    .home-testimonial{
+        padding:22px;
+    }
+
+    .home-hero__title{
+        font-size:clamp(40px, 16vw, 58px);
+    }
+
+    .home-hero__visual{
+        min-height:390px;
+        padding:14px;
+    }
+
+    .home-hero__badge{
+        top:14px;
+        left:14px;
+    }
+
+    .home-hero__card--primary{
+        inset:70px 8px 128px 24px;
+    }
+
+    .home-hero__card--secondary{
+        width:130px;
+        height:166px;
+        right:14px;
+        bottom:58px;
+    }
+
+    .home-hero__card--tertiary{
+        width:118px;
+        height:136px;
+        left:6px;
+        bottom:20px;
+    }
+
+    .home-categories__item{
+        padding:18px;
+    }
+
+    .home-categories__name{
+        font-size:20px;
+    }
+
+    .home-products__header,
+    .home-testimonials__header{
+        margin-bottom:18px;
+    }
+
+    .home-ambassador__visual{
+        min-height:280px;
+    }
+
+    .home-ambassador__actions .btn{
+        width:100%;
     }
 }
