@@ -13,16 +13,18 @@ final class Products extends Controller
     {
         $productModel = new Product();
         $perPage = 24;
+        $query = trim((string)($_GET['q'] ?? ''));
         $page = max(1, (int)($_GET['page'] ?? 1));
-        $totalProducts = $productModel->countActiveForStorefront();
+        $totalProducts = $productModel->countActiveForStorefront($query);
         $totalPages = max(1, (int)ceil($totalProducts / $perPage));
         $page = min($page, $totalPages);
         $offset = ($page - 1) * $perPage;
-        $products = $productModel->allActiveForStorefront($perPage, $offset);
+        $products = $productModel->allActiveForStorefront($perPage, $offset, $query);
 
         $data = [
-            'title' => 'Products',
+            'title' => $query !== '' ? 'Search results for "' . $query . '"' : 'Products',
             'products' => $products,
+            'search_query' => $query,
             'pagination' => [
                 'page' => $page,
                 'per_page' => $perPage,
