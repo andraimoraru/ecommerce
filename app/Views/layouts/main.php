@@ -43,7 +43,7 @@ if (!empty($_SESSION['user_id'])) {
         </a>
 
         <div class="site-header__actions">
-            <a class="icon-link" href="<?= URLROOT ?>/products" aria-label="Search products">
+            <a class="icon-link" href="<?= URLROOT ?>/products#productSearch" aria-label="Search products">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <circle cx="11" cy="11" r="7"></circle>
                     <path d="M20 20l-3.5-3.5"></path>
@@ -68,7 +68,7 @@ if (!empty($_SESSION['user_id'])) {
         </div>
 
         <nav id="mobileMenu" class="mobile-nav" aria-hidden="true">
-            <a href="<?= URLROOT ?>/products">Search</a>
+            <a href="<?= URLROOT ?>/products#productSearch">Search</a>
             <a href="<?= htmlspecialchars($accountHref) ?>">Account</a>
             <a href="<?= URLROOT ?>/cart">Cart<?= $cartCount > 0 ? ' (' . ($cartCount > 99 ? '99+' : $cartCount) . ')' : '' ?></a>
             <?php require APPROOT . '/Views/inc/nav/router.php'; ?>

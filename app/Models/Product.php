@@ -98,9 +98,13 @@ final class Product
         return (int)$stmt->fetchColumn();
     }
 
-    // Return paginated active products for storefront listings.
-    public function allActiveForStorefront(int $limit = 24, int $offset = 0): array
+    /**
+     * @return array<int,array<string,mixed>>
+     */
+    // Return paginated active products for storefront listings, optionally filtered by a search term.
+    public function allActiveForStorefront(int $limit = 24, int $offset = 0, string $query = ''): array
     {
+        $where = $this->storefrontWhereSql($query);
         $stmt = $this->pdo->prepare("
             SELECT
                 p.id,
@@ -119,12 +123,15 @@ final class Product
                 ) AS primary_image
             FROM products p
             LEFT JOIN inventory i ON i.product_id = p.id
-            WHERE p.status = 'ACTIVE'
-              AND COALESCE(i.stock_on_hand, 0) > COALESCE(i.stock_reserved, 0)
+            {$where['sql']}
             ORDER BY p.created_at DESC
             LIMIT :lim
             OFFSET :off
         ");
+
+        foreach ($where['params'] as $param => $value) {
+            $stmt->bindValue($param, $value, PDO::PARAM_STR);
+        }
 
         $stmt->bindValue(':lim', $limit, \PDO::PARAM_INT);
         $stmt->bindValue(':off', $offset, \PDO::PARAM_INT);
@@ -134,17 +141,63 @@ final class Product
     }
 
     // Count active storefront products for pagination.
-    public function countActiveForStorefront(): int
+    public function countActiveForStorefront(string $query = ''): int
     {
-        $stmt = $this->pdo->query("
+        $where = $this->storefrontWhereSql($query);
+        $stmt = $this->pdo->prepare("
             SELECT COUNT(*)
             FROM products p
             LEFT JOIN inventory i ON i.product_id = p.id
-            WHERE p.status = 'ACTIVE'
-              AND COALESCE(i.stock_on_hand, 0) > COALESCE(i.stock_reserved, 0)
+            {$where['sql']}
         ");
 
+        foreach ($where['params'] as $param => $value) {
+            $stmt->bindValue($param, $value, PDO::PARAM_STR);
+        }
+
+        $stmt->execute();
+
         return (int)$stmt->fetchColumn();
+    }
+
+    /**
+     * @return array{sql:string,params:array<string,string>}
+     */
+    // Build the shared storefront visibility and search filter for product listing queries.
+    private function storefrontWhereSql(string $query): array
+    {
+        $sql = "
+            WHERE p.status = 'ACTIVE'
+              AND COALESCE(i.stock_on_hand, 0) > COALESCE(i.stock_reserved, 0)
+        ";
+
+        $query = trim($query);
+
+        if ($query === '') {
+            return [
+                'sql' => $sql,
+                'params' => [],
+            ];
+        }
+
+        $sql .= "
+              AND (
+                  p.name LIKE :search_name
+                  OR p.sku LIKE :search_sku
+                  OR p.description LIKE :search_description
+              )
+        ";
+
+        $search = '%' . $query . '%';
+
+        return [
+            'sql' => $sql,
+            'params' => [
+                ':search_name' => $search,
+                ':search_sku' => $search,
+                ':search_description' => $search,
+            ],
+        ];
     }
 
     // Fetch one active product by slug for the storefront.
