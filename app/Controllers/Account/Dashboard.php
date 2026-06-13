@@ -46,8 +46,7 @@ final class Dashboard extends Controller
             : null;
 
         if (!$order) {
-            http_response_code(404);
-            echo 'Order not found';
+            $this->notFound('We could not find that order for your account.');
             return;
         }
 

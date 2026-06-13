@@ -38,7 +38,7 @@
     </div>
 
     <div>
-      <label>Price (minor units)</label><br>
+      <label>Price </label><small>(£19.99 = 1999)</small><br>
       <input
         type="number"
         name="price_minor"
@@ -46,7 +46,6 @@
         value="<?= htmlspecialchars((string)($old['price_minor'] ?? '')) ?>"
         required
       >
-      <small>£19.99 = 1999</small>
       <?php if (!empty($errors['price_minor'])): ?>
         <p class="text-danger"><?= htmlspecialchars($errors['price_minor']) ?></p>
       <?php endif; ?>

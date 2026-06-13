@@ -6,6 +6,7 @@ namespace App\Core\Middleware;
 use App\Core\Middleware;
 use App\Core\Request;
 use App\Core\Response;
+use App\Core\ErrorPage;
 
 final class AdminMiddleware implements Middleware
 {
@@ -13,8 +14,7 @@ final class AdminMiddleware implements Middleware
     public function handle(Request $request, Response $response): bool
     {
         if (empty($_SESSION['user_role']) || $_SESSION['user_role'] !== 'ADMIN') {
-            $response->status(403);
-            echo '403 Forbidden';
+            ErrorPage::forbidden('This area is for administrators only. If you believe you should have access, please log in with an admin account.');
             return false;
         }
         return true;

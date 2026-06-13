@@ -17,8 +17,7 @@ final class ProductImages extends Controller
 
         $product = (new Product())->findById($productId);
         if (!$product) {
-            http_response_code(404);
-            echo 'Product not found';
+            $this->notFound('We could not find the product for this image.');
             return;
         }
 
@@ -60,8 +59,7 @@ final class ProductImages extends Controller
 
         $product = (new Product())->findById($productId);
         if (!$product) {
-            http_response_code(404);
-            echo 'Product not found';
+            $this->notFound('We could not find the product for this image upload.');
             return;
         }
 

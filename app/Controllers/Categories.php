@@ -30,8 +30,7 @@ final class Categories extends Controller
         $category = (new Category())->findActiveBySlug($slug);
 
         if (!$category) {
-            http_response_code(404);
-            echo 'Category not found';
+            $this->notFound('We could not find this category. It may have moved or no longer be available.');
             return;
         }
 

@@ -37,8 +37,7 @@ final class Customers extends Controller
         $customer = $userModel->findCustomerById($id);
 
         if (!$customer) {
-            http_response_code(404);
-            echo 'Customer not found';
+            $this->notFound('We could not find that customer.');
             return;
         }
 
@@ -60,8 +59,7 @@ final class Customers extends Controller
         $customer = (new User())->findCustomerById($id);
 
         if (!$customer) {
-            http_response_code(404);
-            echo 'Customer not found';
+            $this->notFound('We could not find that customer.');
             return;
         }
 
@@ -80,8 +78,7 @@ final class Customers extends Controller
         $customer = $userModel->findCustomerById($id);
 
         if (!$customer) {
-            http_response_code(404);
-            echo 'Customer not found';
+            $this->notFound('We could not find that customer.');
             return;
         }
 
@@ -131,8 +128,7 @@ final class Customers extends Controller
         $customer = $userModel->findCustomerById($id);
 
         if (!$customer) {
-            http_response_code(404);
-            echo 'Customer not found';
+            $this->notFound('We could not find that customer.');
             return;
         }
 

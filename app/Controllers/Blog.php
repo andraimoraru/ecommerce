@@ -38,8 +38,7 @@ final class Blog extends Controller
         $post = (new BlogPost())->getBySlug($slug);
 
         if (!$post) {
-            http_response_code(404);
-            echo 'Blog post not found';
+            $this->notFound('We could not find this blog post. It may have been moved or unpublished.');
             return;
         }
 

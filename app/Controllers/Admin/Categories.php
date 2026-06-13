@@ -8,6 +8,15 @@ use App\Models\Category;
 
 final class Categories extends Controller
 {
+    // Store a one-time admin flash message for the next page load.
+    private function setFlash(string $type, string $message): void
+    {
+        $_SESSION['flash'] = [
+            'type' => $type,
+            'message' => $message,
+        ];
+    }
+
     // Render the admin category list.
     public function index(): void
     {
@@ -44,8 +53,7 @@ final class Categories extends Controller
         $category = $categoryModel->findById($id);
 
         if (!$category) {
-            http_response_code(404);
-            echo 'Category not found';
+            $this->notFound('We could not find that category.');
             return;
         }
 
@@ -113,8 +121,7 @@ final class Categories extends Controller
         $category = $categoryModel->findById($id);
 
         if (!$category) {
-            http_response_code(404);
-            echo 'Category not found';
+            $this->notFound('We could not find that category.');
             return;
         }
 
@@ -163,19 +170,18 @@ final class Categories extends Controller
         $category = $categoryModel->findById($id);
 
         if (!$category) {
-            http_response_code(404);
-            echo 'Category not found';
+            $this->notFound('We could not find that category.');
             return;
         }
 
         if ($categoryModel->hasProducts($id)) {
-            $_SESSION['admin_category_delete_error'] = 'This category has assigned products and cannot be deleted.';
+            $this->setFlash('error', 'This category still has products linked to it, so it can’t be deleted yet.');
             header('Location: ' . URLROOT . '/admin/categories');
             exit;
         }
 
         $categoryModel->delete($id);
-        $_SESSION['admin_category_delete_success'] = 'Category deleted successfully.';
+        $this->setFlash('success', 'Category deleted successfully.');
 
         header('Location: ' . URLROOT . '/admin/categories');
         exit;

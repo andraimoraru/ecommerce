@@ -46,8 +46,7 @@ final class Products extends Controller
         $product = (new Product())->findActiveBySlug($slug);
 
         if (!$product) {
-            http_response_code(404);
-            echo 'Product not found';
+            $this->notFound('We could not find this product. It may no longer be available.');
             return;
         }
 
@@ -136,8 +135,7 @@ final class Products extends Controller
         $product = (new Product())->findById($id);
 
         if (!$product) {
-            http_response_code(404);
-            echo 'Product not found';
+            $this->notFound('We could not find that product in the admin catalogue.');
             return;
         }
 
@@ -162,8 +160,7 @@ final class Products extends Controller
         $existing = $productModel->findById($id);
 
         if (!$existing) {
-            http_response_code(404);
-            echo 'Product not found';
+            $this->notFound('We could not find that product in the admin catalogue.');
             return;
         }
 

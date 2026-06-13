@@ -81,9 +81,7 @@ final class Router
             return;
         }
 
-        // No route matched
-        $response->status(404);
-        echo '404 Not Found';
+        ErrorPage::notFound();
     }
 
     // Resolve a controller string like `Products@show` and call it.

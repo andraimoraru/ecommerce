@@ -59,4 +59,16 @@ abstract class Controller
 
         require $layoutFile;
     }
+
+    // Show a user-friendly 404 page instead of raw text.
+    protected function notFound(string $message = ''): void
+    {
+        ErrorPage::notFound($message !== '' ? $message : 'We could not find the page you were looking for.');
+    }
+
+    // Show a user-friendly restricted-access page.
+    protected function forbidden(string $message = ''): void
+    {
+        ErrorPage::forbidden($message !== '' ? $message : 'This page is restricted.');
+    }
 }

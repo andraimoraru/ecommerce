@@ -57,7 +57,7 @@
             <div class="card">
                 <h2>Pricing & Status</h2>
 
-                <label>Price (minor units)</label><br>
+                <label>Price </label><small>(£19.99 = 1999)</small><br>
                 <input type="number" name="price_minor" min="1" value="<?= htmlspecialchars((string)$p['price_minor']) ?>">
                 <?php if (!empty($errors['price_minor'])): ?><p class="text-danger"><?= htmlspecialchars($errors['price_minor']) ?></p><?php endif; ?>
 

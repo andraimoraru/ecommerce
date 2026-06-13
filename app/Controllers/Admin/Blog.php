@@ -93,8 +93,7 @@ final class Blog extends Controller
         $post = (new BlogPost())->findById($id);
 
         if (!$post) {
-            http_response_code(404);
-            echo 'Blog post not found';
+            $this->notFound('We could not find that blog post.');
             return;
         }
 
@@ -114,8 +113,7 @@ final class Blog extends Controller
         $existing = $blogModel->findById($id);
 
         if (!$existing) {
-            http_response_code(404);
-            echo 'Blog post not found';
+            $this->notFound('We could not find that blog post.');
             return;
         }
 

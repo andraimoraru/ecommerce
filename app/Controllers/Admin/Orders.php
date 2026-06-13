@@ -53,8 +53,7 @@ final class Orders extends Controller
         [$order, $shippingAddress, $billingAddress, $items] = $this->loadOrderContext($orderModel, $id);
 
         if (!$order) {
-            http_response_code(404);
-            echo 'Order not found';
+            $this->notFound('We could not find that order.');
             return;
         }
 
@@ -88,8 +87,7 @@ final class Orders extends Controller
         [$order, $shippingAddress, $billingAddress, $items] = $this->loadOrderContext($orderModel, $id);
 
         if (!$order || !$shippingAddress || !$billingAddress) {
-            http_response_code(404);
-            echo 'Order not found';
+            $this->notFound('We could not find that order or its address details.');
             return;
         }
 
@@ -116,8 +114,7 @@ final class Orders extends Controller
         [$order, $shippingAddress, $billingAddress, $existingItems] = $this->loadOrderContext($orderModel, $id);
 
         if (!$order || !$shippingAddress || !$billingAddress) {
-            http_response_code(404);
-            echo 'Order not found';
+            $this->notFound('We could not find that order or its address details.');
             return;
         }
 
@@ -157,8 +154,7 @@ final class Orders extends Controller
         $order = $orderModel->findAdminById($id);
 
         if (!$order) {
-            http_response_code(404);
-            echo 'Order not found';
+            $this->notFound('We could not find that order.');
             return;
         }
 
@@ -182,8 +178,7 @@ final class Orders extends Controller
         [$order, $shippingAddress, $billingAddress, $items] = $this->loadOrderContext($orderModel, $id);
 
         if (!$order || !$shippingAddress || !$billingAddress || $items === []) {
-            http_response_code(404);
-            echo 'Order not found';
+            $this->notFound('We could not find the order details needed to create a shipment.');
             return;
         }
 

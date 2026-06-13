@@ -45,8 +45,7 @@ final class Products extends Controller
         $product = $productModel->findActiveBySlug($slug);
 
         if (!$product) {
-            http_response_code(404);
-            echo 'Product not found';
+            $this->notFound('We could not find this product. It may no longer be available.');
             return;
         }
 
