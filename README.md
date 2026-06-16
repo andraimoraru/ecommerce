@@ -1,123 +1,167 @@
-# Modular Lightweight E-Commerce Platform
+A lightweight, server-side rendered e-commerce platform built with PHP 8, MySQL, and a custom MVC architecture. The project was developed as a final-year computing artefact to explore how a modular PHP application can support small business e-commerce workflows without relying on a heavy CMS or plugin-based framework.
 
-A modular, server-side rendered (SSR) e-commerce platform built using modern PHP (PSR-4) and MySQL, designed for small businesses seeking performance, maintainability, and clean external API integration.
+About The Project
+This artefact implements a custom online jewellery store with storefront browsing, customer accounts, cart and checkout functionality, Stripe payment processing, Royal Mail Click & Drop shipment creation, and an administration area for managing store content.
 
-Developed as part of a BSc Computing final year dissertation, this project evaluates the performance and architectural trade-offs of a lightweight modular PHP framework compared to mainstream platforms.
+The application was designed around three main goals:
 
----
-
-# 🎯 Project Aim
-
-To design, implement, and evaluate a modular lightweight e-commerce application that:
-
-Achieves efficient server-side rendering
-
-Minimizes server resource usage
-
-Supports clean API integration via adapter modules
-
-Enables maintainable, scalable architecture without heavy frameworks
-
-# 🏗 Architecture Overview
-
-The platform follows a manual MVC architecture enhanced with modular design principles:
+Build a lightweight server-rendered alternative to plugin-heavy e-commerce platforms.
+Keep the architecture modular, readable, and maintainable.
+Integrate external services such as Stripe and Royal Mail through dedicated service classes.
+Key Features
+Server-side rendered storefront using PHP views.
+Custom MVC routing, controllers, models, middleware, and layouts.
+Product catalogue with categories, product images, stock-aware listings, and search.
+Shopping cart with quantity limits based on available inventory.
+Checkout flow with shipping and billing address handling.
+Stripe Checkout integration with signed webhook validation.
+Payment event audit logging using the payment_events table.
+Customer account area with saved addresses and order history.
+Admin dashboard for products, categories, orders, customers, blog posts, and marketing settings.
+Royal Mail Click & Drop shipment creation for paid orders.
+Blog module with public posts and admin management.
+Friendly flash messages, confirmation dialogs, custom 404 pages, and restricted-access handling.
+Responsive storefront and admin interface.
+Built With
+PHP 8+
+MySQL / MariaDB
+PDO prepared statements
+Composer PSR-4 autoloading
+vlucas/phpdotenv
+PHPUnit
+HTML, CSS, and vanilla JavaScript
+Stripe API
+Royal Mail Click & Drop API
+Architecture Overview
+The platform follows a custom MVC structure:
 
 app/
-  Core/        → Routing, Database, Base Controller
-  Controllers/ → HTTP entry points
-  Models/      → Data access logic
-  Services/    → Business logic layer
-  Modules/     → External API adapters (Payments, Shipping)
-  Views/       → Server-rendered templates
+  config/       Environment-backed configuration
+  Core/         Router, request/response helpers, middleware, database, base controller
+  Controllers/  Storefront, account, checkout, webhook, and admin request handlers
+  Models/       PDO-backed database access for products, orders, users, carts, payments
+  Services/     External API integrations for Stripe and Royal Mail Click & Drop
+  Views/        Server-rendered PHP templates and layouts
 
-Architectural Principles
+public/
+  assets/       CSS and JavaScript
+  uploads/      Product image uploads
+  index.php     Front controller
+The request lifecycle follows a front-controller pattern:
 
-PSR-4 autoloading (Composer)
+Browser request
+  -> public/index.php
+  -> App\Core\Router
+  -> Middleware checks where required
+  -> Controller action
+  -> Model and/or Service classes
+  -> Server-rendered View
+  -> HTML response
+Database Scope
+The database is designed around relational e-commerce entities, including:
 
-Environment-based configuration (.env)
+users
+products
+categories
+inventory
+product_images
+product_categories
+carts
+cart_items
+orders
+order_items
+order_addresses
+order_payments
+payment_events
+order_shipments
+addresses
+user_addresses
+blog_posts
+marketing_settings
+The order flow intentionally stores transactional snapshots, such as product names, SKUs, prices, and customer address details, so historical order records remain accurate even if catalogue or account data changes later.
 
-PDO with prepared statements only
-
-Strict typing (PHP 8+)
-
-Clear separation of concerns
-
-Modular adapter pattern for integrations
-
-External integrations (e.g., Stripe, Royal Mail) are designed as isolated modules under /Modules.
-
-
-
-
-## Quickstart
-
+Installation
 Requirements
-- PHP 8+
-- Composer
-- MySQL / MariaDB 
-- Apache (XAMPP for local dev) or use PHP built-in server
-
-Clone and install
-
-```bash
+PHP 8.0 or newer
+Composer
+MySQL or MariaDB
+Apache, XAMPP, MAMP, or the PHP built-in development server
+cURL enabled for Stripe and Royal Mail API requests
+Clone The Repository
 git clone https://github.com/andraimoraru/ecommerce.git
-cd "Computing artefact"
+cd ecommerce
 composer install
+Configure Environment Variables
+Create a .env file from the example:
+
 cp .env.example .env
+Then update the values for your local environment:
 
-```
+APP_ENV=local
+APP_URL=http://localhost:8000
+SITE_NAME="Modular E-commerce"
 
-## Run locally
+DB_HOST=127.0.0.1
+DB_NAME=modular_ecom
+DB_USER=root
+DB_PASS=
 
-PHP built-in server (quick)
-
-```bash
-
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+ROYAL_MAIL_CLICK_DROP_API_KEY=
+Run Locally
 php -S localhost:8000 -t public
+Open:
 
-# Open http://localhost:8000 in your browser
+http://localhost:8000
+Testing
+Run the PHPUnit test suite:
 
-```
-# 🧪 Testing Strategy
-
-Test structure:
-
-tests/
-  Unit/
-  Integration/
-
-Unit tests validate isolated components (e.g., autoloading, services).
-
-Integration tests validate multi-layer flows (e.g., checkout process).
-
-- Run the test suite (unit + integration):
-
-```bash
 composer test
-```
+Run PHP syntax checks across the application:
 
-- You can also run PHPUnit directly:
+composer lint
+External Integrations
+Stripe
+Stripe is handled through app/Services/StripeGateway.php.
 
-```bash
-./vendor/bin/phpunit --configuration phpunit.xml
-```
+Implemented payment features include:
 
-# 📊 Research Evaluation Criteria
+Checkout Session creation.
+Checkout Session retrieval after redirect.
+Signed webhook verification.
+Payment event audit logging.
+Idempotency check using provider_event_id.
+order_payments updates.
+Order status update to PAID after confirmed payment.
+Royal Mail Click & Drop
+Royal Mail is handled through app/Services/RoyalMailClickDropService.php.
 
-The platform will be evaluated against:
+The current implementation creates shipments in Click & Drop and stores shipment metadata in order_shipments. It does not generate or store Royal Mail label PDFs inside the application; label management remains in the Royal Mail account.
 
-Page load time
+Admin Area
+The admin area includes:
 
-Time To First Byte (TTFB)
+Product management.
+Category management.
+Order viewing and editing.
+Royal Mail shipment creation.
+Customer management.
+Blog management.
+Marketing settings for Instagram and Facebook profile details.
+Admin access is protected using session-based authentication and role checks through middleware.
 
-Memory consumption
+Academic Context
+This project was developed as a computing artefact exploring:
 
-SQL query count
+Lightweight server-side rendering.
+Custom MVC architecture.
+Relational database design.
+Secure payment processing.
+Modular API integration.
+Performance-conscious implementation through pagination, limited result sets, selective lazy loading, and reduced dependency usage.
+Project Status
+The artefact implements the main storefront, customer, checkout, payment, shipping, and administration workflows. Some production-hardening tasks remain suitable for future development, including automated image compression, static asset cache headers, a minified asset build step, and broader automated test coverage.
 
-Modularity and coupling analysis
-
-Benchmark comparisons will be made against published metrics from mainstream platforms such as Shopify and WooCommerce.
-
-## License
-
-MIT
+License
+This project is licensed under the MIT License.
